@@ -46,7 +46,7 @@ class SignInPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Welcome To Dirty South'),
+        title: Text('Welcome To Dirty South Club'),
         elevation: 0,
       ),
       body: _buildContent(context),
