@@ -3,13 +3,15 @@ import 'package:flutter/cupertino.dart';
 
 class SignInButton extends CustomButton {
   final double height;
+  final double width;
   SignInButton({
     @required String text,
     Color color,
     Color textColor,
     VoidCallback onPressed,
     this.height: 50,
-  }) : assert(text != null),
+    this.width: 200,
+  })  : assert(text != null),
         super(
           child: Text(
             text,
@@ -18,5 +20,6 @@ class SignInButton extends CustomButton {
           color: color,
           onPressed: onPressed,
           height: height,
+          width: width,
         );
 }

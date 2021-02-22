@@ -1,6 +1,7 @@
 import 'package:ds_loyalty_user/common_widgets/show_alert_dialog.dart';
-import 'package:ds_loyalty_user/services/auth_provider.dart';
+import 'package:ds_loyalty_user/services/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class HomePage extends StatelessWidget {
@@ -8,7 +9,7 @@ class HomePage extends StatelessWidget {
 
   Future<void> _signOut(BuildContext context) async {
     try {
-      final auth = AuthProvider.of(context);
+      final auth = Provider.of<AuthBase>(context, listen: false);
       await auth.signOut();
     } catch (e) {
       print(e.toString());

@@ -1,8 +1,9 @@
 import 'package:ds_loyalty_user/app/sign_in/validators.dart';
 import 'package:ds_loyalty_user/common_widgets/form_submit_button.dart';
 import 'package:ds_loyalty_user/common_widgets/show_alert_dialog.dart';
-import 'package:ds_loyalty_user/services/auth_provider.dart';
+import 'package:ds_loyalty_user/services/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 enum EmailSignInFormType { signIn, register }
 
@@ -31,7 +32,7 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
       _isLoading = true;
     });
     try {
-      final auth = AuthProvider.of(context);
+      final auth = Provider.of<AuthBase>(context, listen: false);
       if (_formType == EmailSignInFormType.signIn) {
         await auth.signInEmail(_email, _password);
       } else {

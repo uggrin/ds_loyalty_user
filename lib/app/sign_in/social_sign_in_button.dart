@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 
 class SocialSignInButton extends CustomButton {
   final double height;
+  final double width;
   SocialSignInButton({
     @required String assetName,
     String text,
@@ -10,11 +11,12 @@ class SocialSignInButton extends CustomButton {
     Color textColor,
     VoidCallback onPressed,
     this.height: 50,
+    this.width: 200,
   })  : assert(assetName != null),
         assert(text != null),
         super(
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Image.asset('assets/images/$assetName.png'),
               Text(
