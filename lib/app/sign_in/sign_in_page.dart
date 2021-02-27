@@ -1,25 +1,32 @@
 import 'package:ds_loyalty_user/app/sign_in/email_sign_in_page.dart';
-import 'package:ds_loyalty_user/app/sign_in/sign_in_bloc.dart';
 import 'package:ds_loyalty_user/app/sign_in/sign_in_button.dart';
+import 'package:ds_loyalty_user/app/sign_in/sign_in_manager.dart';
 import 'package:ds_loyalty_user/app/sign_in/social_sign_in_button.dart';
 import 'package:ds_loyalty_user/common_widgets/show_exception_alert.dart';
 import 'package:ds_loyalty_user/services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class SignInPage extends StatelessWidget {
-  const SignInPage({Key key, @required this.bloc}) : super(key: key);
-  final SignInBloc bloc;
+  const SignInPage({Key key, @required this.manager, @required this.isLoading}) : super(key: key);
+  final SignInManager manager;
+  final bool isLoading;
 
   static Widget create(BuildContext context) {
     final auth = Provider.of<AuthBase>(context, listen: false);
-    return Provider<SignInBloc>(
-      create: (_) => SignInBloc(auth: auth),
-      dispose: (_, bloc) => bloc.dispose(),
-      child: Consumer<SignInBloc>(
-        builder: (_, bloc, __) => SignInPage(
-          bloc: bloc,
+    return ChangeNotifierProvider<ValueNotifier<bool>>(
+      create: (_) => ValueNotifier<bool>(false),
+      child: Consumer<ValueNotifier<bool>>(
+        builder: (_, isLoading, __) => Provider<SignInManager>(
+          create: (_) => SignInManager(auth: auth, isLoading: isLoading),
+          child: Consumer<SignInManager>(
+            builder: (_, manager, __) => SignInPage(
+              manager: manager,
+              isLoading: isLoading.value,
+            ),
+          ),
         ),
       ),
     );
@@ -47,7 +54,7 @@ class SignInPage extends StatelessWidget {
 
   Future<void> _signInGoogle(BuildContext context) async {
     try {
-      await bloc.signInGoogle();
+      await manager.signInGoogle();
     } on Exception catch (e) {
       _showSignInError(context, e);
     }
@@ -55,7 +62,7 @@ class SignInPage extends StatelessWidget {
 
   Future<void> _signInFacebook(BuildContext context) async {
     try {
-      await bloc.signInFacebook();
+      await manager.signInFacebook();
     } on Exception catch (e) {
       _showSignInError(context, e);
     }
@@ -78,20 +85,26 @@ class SignInPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Welcome To Dirty South Club'),
+        title: Text(
+          'Welcome to Dirty South Club',
+          style: GoogleFonts.oswald(
+            fontSize: 26,
+          ),
+        ),
         elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Image.asset('assets/images/dse-logo.jpg'),
+          ),
+        ],
       ),
-      body: StreamBuilder<bool>(
-          stream: bloc.isLoadingStream,
-          initialData: false,
-          builder: (context, snapshot) {
-            return _buildContent(context, snapshot.data);
-          }),
+      body: _buildContent(context),
       backgroundColor: Colors.black54,
     );
   }
 
-  Widget _buildContent(BuildContext context, bool isLoading) {
+  Widget _buildContent(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Center(
@@ -117,7 +130,7 @@ class SignInPage extends StatelessWidget {
             SizedBox(height: 12.0),
             SizedBox(
               height: 50,
-              child: _buildHeader(isLoading),
+              child: _buildHeader(),
             ),
             SizedBox(height: 12.0),
             /*Divider(
@@ -173,7 +186,7 @@ class SignInPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(bool isLoading) {
+  Widget _buildHeader() {
     if (isLoading) {
       return Center(
         child: CircularProgressIndicator(),

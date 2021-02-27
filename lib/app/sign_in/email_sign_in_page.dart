@@ -1,4 +1,4 @@
-import 'package:ds_loyalty_user/app/sign_in/email_sign_in_form_bloc_based.dart';
+import 'package:ds_loyalty_user/app/sign_in/email_sign_in_form_change_notifier.dart';
 import 'package:flutter/material.dart';
 
 class EmailSignInPage extends StatelessWidget {
@@ -15,7 +15,7 @@ class EmailSignInPage extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Card(
             color: Colors.grey[200],
-            child: EmailSignInFormBloc.create(context),
+            child: EmailSignInFormChangeNotifier.create(context),
           ),
         ),
       ),

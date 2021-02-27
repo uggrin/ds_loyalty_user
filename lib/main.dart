@@ -2,6 +2,7 @@ import 'package:ds_loyalty_user/app/landing_page.dart';
 import 'package:ds_loyalty_user/services/auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -20,6 +21,12 @@ class DsApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.amber,
           backgroundColor: Colors.black54,
+          textTheme: GoogleFonts.oswaldTextTheme(
+            Theme.of(context).textTheme,
+          ),
+          primaryTextTheme: GoogleFonts.oswaldTextTheme(
+            Theme.of(context).textTheme,
+          ),
         ),
         home: LandingPage(),
       ),
