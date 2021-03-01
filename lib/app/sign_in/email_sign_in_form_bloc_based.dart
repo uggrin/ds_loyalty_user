@@ -29,6 +29,8 @@ class EmailSignInFormBloc extends StatefulWidget {
 class _EmailSignInFormBlocState extends State<EmailSignInFormBloc> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final FocusNode _nameFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
@@ -36,8 +38,11 @@ class _EmailSignInFormBlocState extends State<EmailSignInFormBloc> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
+
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _nameFocusNode.dispose();
     super.dispose();
   }
 

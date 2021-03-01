@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ds_loyalty_user/services/api_path.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -6,6 +8,16 @@ abstract class AuthBase {
   User get currentUser;
   Future<User> signInAnonimously();
   Future<User> createUserEmail(String email, String password);
+  Future<User> createUser(
+    String email,
+    String password,
+    String fullName,
+    String birthday,
+    String country,
+    String city,
+    String address,
+    String phoneNumber,
+  );
   Future<User> signInEmail(String email, String password);
   Future<User> signInGoogle();
   Future<User> signInFacebook();
@@ -15,6 +27,7 @@ abstract class AuthBase {
 
 class Auth implements AuthBase {
   final _firebaseAuth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
 
   @override
   Stream<User> authStateChanges() => _firebaseAuth.authStateChanges();
@@ -45,6 +58,44 @@ class Auth implements AuthBase {
     return userCredential.user;
   }
 
+  Future<User> createUser(
+    String email,
+    String password,
+    String fullName,
+    String birthday,
+    String country,
+    String city,
+    String address,
+    String phoneNumber,
+  ) async {
+    try {
+      final User user = (await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      ))
+          .user;
+
+      user.sendEmailVerification();
+
+      await _firestore.collection('users').doc(user.uid).set({
+        'id': user.uid,
+        'email': email,
+        'fullName': fullName,
+        'birthday': birthday,
+        'country': country,
+        'city': city,
+        'address': address,
+        'phoneNumber': phoneNumber,
+        'totalPoints': 0,
+      });
+
+      return user;
+    } catch (e) {
+      print(e);
+      print("failed");
+    }
+  }
+
   @override
   Future<User> signInGoogle() async {
     final googleSignIn = GoogleSignIn();
@@ -57,6 +108,18 @@ class Auth implements AuthBase {
           idToken: googleAuth.idToken,
           accessToken: googleAuth.accessToken,
         ));
+        DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(userCredential.user.uid).get();
+        if (!snapshot.exists) {
+          await _firestore.collection(APIPath.users()).doc(userCredential.user.uid).set({
+            'id': userCredential.user.uid,
+            'email': userCredential.user.email,
+            'fullName': userCredential.user.displayName,
+            'phoneNumber': userCredential.user.phoneNumber,
+            'totalPoints': 0,
+            //'photoUrl': userCredential.user.photoURL,
+            //'providerData': userCredential.user.providerData,
+          });
+        }
         return userCredential.user;
       } else {
         throw FirebaseAuthException(code: 'ERROR_MISSING_GOODLE_ID_TOKEN', message: 'Missing Google ID token.');
