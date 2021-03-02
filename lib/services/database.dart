@@ -6,9 +6,12 @@ import 'package:flutter/foundation.dart';
 
 abstract class Database {
   Future<void> createJob(Job job);
-  Future<void> addPoint(Point point, String scannedId, String admin, int timestamp);
+  Future<void> addPoint(
+      Point point, String scannedId, String admin, int timestamp);
   Stream<List<Job>> jobsStream();
 }
+
+String documentTimestamp() => DateTime.now().toIso8601String();
 
 class FirestoreDatabase implements Database {
   FirestoreDatabase({@required this.uid}) : assert(uid != null);
@@ -17,13 +20,16 @@ class FirestoreDatabase implements Database {
 
   final _service = FirestoreService.instance;
 
-  Future<void> addPoint(Point point, String scannedId, String adminName, int timestamp) => _service.setData(
+  Future<void> addPoint(
+          Point point, String scannedId, String adminName, int timestamp) =>
+      _service.setData(
+        // TODO: change timestamp
         path: APIPath.point(scannedId, timestamp),
         data: point.pointToMap(scannedId, uid, adminName),
       );
 
   Future<void> createJob(Job job) => _service.setData(
-        path: APIPath.job(uid, 'job_3'),
+        path: APIPath.job(uid, documentTimestamp()),
         data: job.jobToMap(),
       );
 
