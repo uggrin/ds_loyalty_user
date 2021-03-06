@@ -1,33 +1,45 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ds_loyalty_user/app/home/models/job.dart';
+import 'package:ds_loyalty_user/app/home/models/offer.dart';
 import 'package:ds_loyalty_user/common_widgets/show_alert_dialog.dart';
 import 'package:ds_loyalty_user/common_widgets/show_exception_alert.dart';
 import 'package:ds_loyalty_user/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class AddJobPage extends StatefulWidget {
+class EditOffer extends StatefulWidget {
+  const EditOffer({Key key, @required this.database, this.offer}) : super(key: key);
   final Database database;
+  final Offer offer;
 
-  const AddJobPage({Key key, @required this.database}) : super(key: key);
-
-  static Future<void> show(BuildContext context) async {
+  static Future<void> show(BuildContext context, {Offer offer}) async {
     final database = Provider.of<Database>(context, listen: false);
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => AddJobPage(database: database),
+      builder: (context) => EditOffer(
+        database: database,
+        offer: offer,
+      ),
       fullscreenDialog: true,
     ));
   }
 
   @override
-  _AddJobPageState createState() => _AddJobPageState();
+  _EditOfferState createState() => _EditOfferState();
 }
 
-class _AddJobPageState extends State<AddJobPage> {
+class _EditOfferState extends State<EditOffer> {
   final _formKey = GlobalKey<FormState>();
 
   String _name;
-  int _ratePerHour;
+  int _pointCost;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.offer != null) {
+      _name = widget.offer.name;
+      _pointCost = widget.offer.pointCost;
+    }
+  }
 
   bool _validateAndSaveForm() {
     final form = _formKey.currentState;
@@ -41,16 +53,17 @@ class _AddJobPageState extends State<AddJobPage> {
   Future<void> _submit() async {
     if (_validateAndSaveForm()) {
       try {
-        final jobs = await widget.database.jobsStream().first;
-        final allNames = jobs.map((job) => job.name).toList();
+        final offers = await widget.database.offersStream().first;
+        final allNames = offers.map((offer) => offer.name).toList();
+        if (widget.offer != null) {
+          allNames.remove(widget.offer.name);
+        }
         if (allNames.contains(_name)) {
-          showAlertDialog(context,
-              title: 'Name already used',
-              content: 'Enter different job name',
-              defaultActionText: 'Ok');
+          showAlertDialog(context, title: 'Title already used', content: 'Enter different title', defaultActionText: 'Ok');
         } else {
-          final job = Job(name: _name, ratePerHour: _ratePerHour);
-          await widget.database.createJob(job);
+          final id = widget.offer?.id ?? documentTimestamp();
+          final offer = Offer(id: id, name: _name, pointCost: _pointCost);
+          await widget.database.setOffer(offer);
           Navigator.of(context).pop();
         }
       } on FirebaseException catch (e) {
@@ -68,7 +81,7 @@ class _AddJobPageState extends State<AddJobPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 2.0,
-        title: Text('New Job'),
+        title: Text(widget.offer == null ? 'New offer' : 'Edit offer'),
         actions: [
           FlatButton(
               onPressed: _submit,
@@ -110,8 +123,9 @@ class _AddJobPageState extends State<AddJobPage> {
     return [
       TextFormField(
         autofocus: true,
+        initialValue: _name,
         decoration: InputDecoration(
-          labelText: 'Job name',
+          labelText: 'Offer name',
         ),
         validator: (value) => value.isNotEmpty ? null : 'Name can\'t be empty',
         onSaved: (value) => _name = value,
@@ -119,10 +133,11 @@ class _AddJobPageState extends State<AddJobPage> {
       ),
       TextFormField(
         decoration: InputDecoration(
-          labelText: 'Rate per hour',
+          labelText: 'Cost',
         ),
-        validator: (value) => value.isNotEmpty ? null : 'Rate can\'t be empty',
-        onSaved: (value) => _ratePerHour = int.tryParse(value) ?? 0,
+        initialValue: _pointCost != null ? '$_pointCost' : null,
+        validator: (value) => value.isNotEmpty ? null : 'Cost can\'t be empty',
+        onSaved: (value) => _pointCost = int.tryParse(value) ?? 0,
         textInputAction: TextInputAction.done,
         onEditingComplete: _submit,
         keyboardType: TextInputType.numberWithOptions(

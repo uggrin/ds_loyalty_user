@@ -1,22 +1,22 @@
 import 'package:flutter/foundation.dart';
 
 class Point {
-  Point({@required this.point, @required this.timestamp, @required this.userId});
+  Point({@required this.points, @required this.timestamp, @required this.userId});
 
-  final int point;
-  final int timestamp;
+  final int points;
+  final String timestamp;
   final String userId;
 
   factory Point.fromMap(Map<String, dynamic> data) {
     if (data == null) {
       return null;
     }
-    final int point = data['point'];
-    final int timestamp = data['timestamp'];
+    final int point = data['points'];
+    final String timestamp = data['timestamp'];
     final String userId = data['userId'];
 
     return Point(
-      point: point,
+      points: point,
       timestamp: timestamp,
       userId: userId,
     );
@@ -26,9 +26,15 @@ class Point {
     return {
       'adminId': adminId,
       'adminName': adminName,
-      'point': point,
+      'points': points,
       'timestamp': timestamp,
       'userId': scannedId,
+    };
+  }
+
+  Map<String, dynamic> pointToMapDoc(String scannedId) {
+    return {
+      'totalPoints': points,
     };
   }
 }

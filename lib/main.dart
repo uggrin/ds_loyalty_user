@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import 'app/helpers/boja.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -19,10 +21,17 @@ class DsApp extends StatelessWidget {
       child: MaterialApp(
         title: 'DS Loyalty',
         theme: ThemeData(
-          primarySwatch: Colors.amber,
-          backgroundColor: Colors.black54,
-          textTheme: GoogleFonts.oswaldTextTheme(
-            Theme.of(context).textTheme,
+          primarySwatch: Boja.dsGoldPrimary,
+          scaffoldBackgroundColor: Colors.black87,
+          accentColor: Boja.dsaccent[400],
+          fontFamily: 'Oswald',
+          textTheme: TextTheme(
+            headline1: TextStyle(fontSize: 34.0, fontWeight: FontWeight.bold, color: Boja.textondark),
+            headline2: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold, color: Boja.textondark, fontStyle: FontStyle.italic),
+            headline6: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w800, color: Boja.textondarkAccent, fontStyle: FontStyle.italic),
+            bodyText2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
+            overline: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w800, color: Boja.dsaccent[200], fontStyle: FontStyle.italic),
+            subtitle1: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w800, color: Boja.dsaccent[200], fontStyle: FontStyle.italic),
           ),
           primaryTextTheme: GoogleFonts.oswaldTextTheme(
             Theme.of(context).textTheme,

@@ -1,4 +1,4 @@
-import 'package:ds_loyalty_user/app/home/jobs/jobs_page.dart';
+import 'package:ds_loyalty_user/app/home/home_page.dart';
 import 'package:ds_loyalty_user/app/sign_in/sign_in_page.dart';
 import 'package:ds_loyalty_user/services/auth.dart';
 import 'package:ds_loyalty_user/services/database.dart';
@@ -26,7 +26,7 @@ class LandingPage extends StatelessWidget {
             create: (_) => FirestoreDatabase(
               uid: user.uid,
             ),
-            child: JobsPage(),
+            child: HomePage(),
           );
         }
         return Scaffold(

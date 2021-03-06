@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ds_loyalty_user/app/helpers/reg_expressions.dart';
 import 'package:ds_loyalty_user/app/home/models/point.dart';
 import 'package:ds_loyalty_user/common_widgets/show_alert_dialog.dart';
 import 'package:ds_loyalty_user/common_widgets/show_exception_alert.dart';
+import 'package:ds_loyalty_user/common_widgets/show_qr_code.dart';
+import 'package:ds_loyalty_user/services/api_paths.dart';
 import 'package:ds_loyalty_user/services/auth.dart';
 import 'package:ds_loyalty_user/services/database.dart';
 import 'package:flutter/foundation.dart';
@@ -11,6 +14,12 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import 'add_points/edit_points.dart';
+import 'models/offer.dart';
+import 'offers/edit_offer.dart';
+import 'offers/list_items_builder.dart';
+import 'offers/offer_list_tile.dart';
+
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
 
@@ -19,33 +28,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _scanBarcode = 'Unknown';
+  bool isAdmin = false;
 
   @override
   void initState() {
     super.initState();
+    checkUserRole();
   }
 
-  dynamic drawQR(BuildContext context) {
-    final auth = Provider.of<AuthBase>(context, listen: false);
-    if (auth.currentUser.uid.isNotEmpty) {
-      return QrImage(
-        data: auth.currentUser.uid,
-        version: QrVersions.auto,
-        size: 200,
-        foregroundColor: Color.fromRGBO(255, 221, 51, 1),
-      );
-    } else {
-      return Text('Error getting user');
-    }
-  }
-
-  Future<void> scanQR() async {
+  // TODO: Connect feature
+  Future<void> redeemPoints() async {
     String barcodeScanRes;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.QR);
-      _addPoint(context, barcodeScanRes);
+
+      RegExpMatch regexQR = RegExpressions.scannedQRegex.firstMatch(barcodeScanRes);
+      String userId = regexQR.group(1);
+      int points = int.parse(regexQR.group(2));
+
+      _addPoint(context, userId, points);
     } on PlatformException {
       barcodeScanRes = 'Failed to get platform version.';
     }
@@ -54,10 +56,31 @@ class _HomePageState extends State<HomePage> {
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
     if (!mounted) return;
+  }
 
-    setState(() {
-      _scanBarcode = barcodeScanRes;
-    });
+  Future<void> _addPoint(BuildContext context, String scannedId, int points) async {
+    final auth = Provider.of<AuthBase>(context, listen: false);
+    final database = Provider.of<Database>(context, listen: false);
+    String timestamp = DateTime.now().toIso8601String();
+    try {
+      await database.addPoints(
+          Point(
+            points: points,
+            timestamp: timestamp,
+            userId: scannedId,
+          ),
+          scannedId,
+          auth.currentUser.displayName,
+          timestamp);
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        showExceptionAlert(
+          context,
+          title: 'You don\'t have permissions',
+          exception: e,
+        );
+      }
+    }
   }
 
   Future<void> _signOut(BuildContext context) async {
@@ -82,36 +105,27 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // TODO: Add to users profile total points
-  Future<void> _addPoint(BuildContext context, String scannedId) async {
+  Future<bool> checkUserRole() async {
     final auth = Provider.of<AuthBase>(context, listen: false);
-    int timestamp = DateTime.now().millisecondsSinceEpoch;
     try {
-      final database = Provider.of<Database>(context, listen: false);
-      await database.addPoint(
-          Point(
-            point: 1,
-            timestamp: timestamp,
-            userId: scannedId,
-          ),
-          scannedId,
-          auth.currentUser.displayName,
-          timestamp);
+      final snapshot = await FirebaseFirestore.instance.collection(APIPath.admin()).doc(auth.currentUser.uid).get();
+      this.setState(() {
+        isAdmin = snapshot.exists;
+      });
     } on FirebaseException catch (e) {
-      if (e.code == 'permission-denied') {
-        showExceptionAlert(
-          context,
-          title: 'You don\'t have permissions',
-          exception: e,
-        );
-      }
+      showExceptionAlert(
+        context,
+        title: 'Error checking role',
+        exception: e,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final database = Provider.of<Database>(context, listen: false);
-    database.jobsStream();
+    final auth = Provider.of<AuthBase>(context, listen: false);
+    database.offersStream();
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
@@ -123,32 +137,93 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: Container(
-        color: Colors.black87,
         child: Column(
           children: [
             Row(
-              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                drawQR(context),
+                QrImage(
+                  data: auth.currentUser.uid,
+                  version: QrVersions.auto,
+                  size: 250,
+                  foregroundColor: Colors.white,
+                ),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Total points: 4',
-                  style: TextStyle(fontSize: 24, color: Colors.white),
+                Text('Max Musterman', style: Theme.of(context).textTheme.headline2),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FlatButton(
+                  onPressed: () => EditOffer.show(context),
+                  child: Icon(
+                    Icons.add,
+                    size: 22,
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
+            Expanded(
+              child: _buildOffers(context),
+            )
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => scanQR(),
+        onPressed: () => EditPoints.show(context),
+        //onPressed: () => scanQR(),
         child: Icon(Icons.add),
       ),
     );
+  }
+
+  Future<void> _delete(BuildContext context, Offer job) async {
+    try {
+      final database = Provider.of<Database>(context, listen: false);
+      await database.deleteOffer(job);
+    } on FirebaseException catch (e) {
+      showExceptionAlert(context, title: 'Operation failed', exception: e);
+    }
+  }
+
+  _displayQRCard(BuildContext context, int points, String subtitle) async {
+    final auth = Provider.of<AuthBase>(context, listen: false);
+    await showQRDialog(context, points: points, uid: auth.currentUser.uid, subtitle: subtitle);
+  }
+
+  Widget _buildOffers(BuildContext context) {
+    final database = Provider.of<Database>(context, listen: false);
+
+    return StreamBuilder<List<Offer>>(
+        stream: database.offersStream(),
+        builder: (context, snapshot) {
+          if (isAdmin) {
+            return ListItemsBuilder<Offer>(
+                snapshot: snapshot,
+                itemBuilder: (context, offer) => Dismissible(
+                      key: Key('offer-${offer.id}'),
+                      background: Container(color: Colors.red),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (direction) => _delete(context, offer),
+                      child: OfferListTile(
+                        offer: offer,
+                        onTap: () => EditOffer.show(context, offer: offer),
+                      ),
+                    ));
+          } else {
+            return ListItemsBuilder<Offer>(
+                snapshot: snapshot,
+                itemBuilder: (context, offer) => OfferListTile(
+                      offer: offer,
+                      onTap: () => _displayQRCard(context, offer.pointCost, offer.name),
+                    ));
+          }
+        });
   }
 }

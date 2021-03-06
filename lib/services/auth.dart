@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ds_loyalty_user/services/api_path.dart';
+import 'package:ds_loyalty_user/services/api_paths.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 import 'package:google_sign_in/google_sign_in.dart';

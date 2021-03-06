@@ -21,6 +21,7 @@ dependencies:
   google_fonts: ^1.1.2
   cloud_firestore: 0.14.3
   flutter_barcode_scanner: ^1.0.1
+  flutter_slidable: ^0.5.7
 
 
 dev_dependencies:
