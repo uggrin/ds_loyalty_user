@@ -116,6 +116,7 @@ class Auth implements AuthBase {
             'fullName': userCredential.user.displayName,
             'phoneNumber': userCredential.user.phoneNumber,
             'totalPoints': 0,
+            'accepted_policy': true,
             //'photoUrl': userCredential.user.photoURL,
             //'providerData': userCredential.user.providerData,
           });

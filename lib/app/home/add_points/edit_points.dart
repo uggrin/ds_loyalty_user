@@ -8,6 +8,7 @@ import 'package:ds_loyalty_user/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:numberpicker/numberpicker.dart';
 import 'package:provider/provider.dart';
 
 class EditPoints extends StatefulWidget {
@@ -37,13 +38,15 @@ class _EditPointsState extends State<EditPoints> {
     super.initState();
   }
 
+  int _currentValue = 1;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Points'),
         actions: [
-          FlatButton(
+          TextButton(
             onPressed: () => _confirmSignOut(context),
             child: Icon(Icons.logout),
           )
@@ -51,9 +54,37 @@ class _EditPointsState extends State<EditPoints> {
       ),
       body: Container(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.max,
           children: [
+            SizedBox(height: 8),
+            Text(
+              "Select amount and tap button to scan",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                NumberPicker(
+                  value: _currentValue,
+                  minValue: 0,
+                  maxValue: 100,
+                  onChanged: (value) => setState(() => _currentValue = value),
+                  textStyle: TextStyle(
+                    color: Colors.grey,
+                  ),
+                  selectedTextStyle: TextStyle(color: Colors.white, fontSize: 42),
+                ),
+              ],
+            ),
+            CustomButton(
+              color: Colors.white,
+              child: Text("Scan to add"),
+              width: 200,
+              onPressed: () => scanToAdd(_currentValue),
+            ),
+
+            /*Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CustomButton(
@@ -96,14 +127,14 @@ class _EditPointsState extends State<EditPoints> {
                   },
                 ),
               ],
-            ),
+            ),*/
           ],
         ),
       ),
     );
   }
 
-  Future<void> scanQR(int points) async {
+  Future<void> scanToAdd(int points) async {
     String barcodeScanRes;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {

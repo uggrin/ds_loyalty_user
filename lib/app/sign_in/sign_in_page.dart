@@ -1,14 +1,17 @@
 import 'package:ds_loyalty_user/app/sign_in/email_sign_in_page.dart';
 import 'package:ds_loyalty_user/app/sign_in/sign_in_manager.dart';
 import 'package:ds_loyalty_user/app/sign_in/social_sign_in_button.dart';
+import 'package:ds_loyalty_user/common_widgets/show_alert_dialog.dart';
 import 'package:ds_loyalty_user/common_widgets/show_exception_alert.dart';
 import 'package:ds_loyalty_user/services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class SignInPage extends StatelessWidget {
+class SignInPage extends StatefulWidget {
   const SignInPage({Key key, @required this.manager, @required this.isLoading}) : super(key: key);
   final SignInManager manager;
   final bool isLoading;
@@ -31,6 +34,11 @@ class SignInPage extends StatelessWidget {
     );
   }
 
+  @override
+  _SignInPageState createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
   void _showSignInError(BuildContext context, Exception exception) {
     if (exception is FirebaseException && exception.code == 'ERROR_ABORTED_BY_USER') {
       return;
@@ -53,7 +61,7 @@ class SignInPage extends StatelessWidget {
 
   Future<void> _signInGoogle(BuildContext context) async {
     try {
-      await manager.signInGoogle();
+      await widget.manager.signInGoogle();
     } on Exception catch (e) {
       _showSignInError(context, e);
     }
@@ -61,23 +69,11 @@ class SignInPage extends StatelessWidget {
 
   Future<void> _signInFacebook(BuildContext context) async {
     try {
-      await manager.signInFacebook();
+      await widget.manager.signInFacebook();
     } on Exception catch (e) {
       _showSignInError(context, e);
     }
   }
-
-  /*Future<void> _signInAnonimously(BuildContext context) async {
-    final auth = Provider.of<AuthBase>(context, listen: false);
-    try {
-      setState(() => _isLoading = true);
-      await auth.signInAnonimously();
-    } on Exception catch (e) {
-      _showSignInError(context, e);
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +81,7 @@ class SignInPage extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Welcome to Dirty South Club',
+          'Willkommen im Dirty South Club!',
           style: GoogleFonts.oswald(
             fontSize: 26,
           ),
@@ -115,7 +111,7 @@ class SignInPage extends StatelessWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Image.asset(
                       'assets/images/logo-dark.png',
-                      scale: 1.5,
+                      scale: 3,
                     ),
                   ),
                 ),
@@ -123,7 +119,7 @@ class SignInPage extends StatelessWidget {
             ),
             SizedBox(height: 12.0),
             SizedBox(
-              height: 50,
+              height: 30,
               child: _buildHeader(),
             ),
             SizedBox(height: 12.0),
@@ -137,9 +133,11 @@ class SignInPage extends StatelessWidget {
               assetName: 'google-logo',
               textColor: Colors.black87,
               color: Colors.white,
-              height: 45,
+              height: 35,
               width: MediaQuery.of(context).size.width - 180,
-              onPressed: isLoading ? null : () => _signInGoogle(context),
+              /*
+              onPressed: widget.isLoading || !isChecked ? null : () => _signInGoogle(context),*/
+              onPressed: () => checkPrivacyAccept(1),
             ),
             SizedBox(height: 12),
             SocialSignInButton(
@@ -147,12 +145,21 @@ class SignInPage extends StatelessWidget {
               assetName: 'facebook-logo',
               textColor: Colors.white,
               color: Color(0xFF334D92),
-              height: 50,
+              height: 40,
               width: MediaQuery.of(context).size.width - 180,
-              onPressed: isLoading ? null : () => _signInFacebook(context),
+              onPressed: () => checkPrivacyAccept(2),
             ),
-            /*SizedBox(height: 12),
-            SignInButton(
+            SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                policyBox(context),
+                Expanded(
+                  child: policyText(context),
+                ),
+              ],
+            )
+            /*SignInButton(
               text: 'Email',
               textColor: Colors.black87,
               color: Colors.amber,
@@ -180,17 +187,94 @@ class SignInPage extends StatelessWidget {
     );
   }
 
+  bool isChecked = false;
+
+  @override
+  Widget policyBox(BuildContext context) {
+    Color getColor(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return Colors.blue;
+      }
+      return Color(0xFFFFDD33);
+    }
+
+    return Checkbox(
+      checkColor: Colors.grey[900],
+      fillColor: MaterialStateProperty.resolveWith(getColor),
+      value: isChecked,
+      onChanged: (bool value) {
+        setState(() {
+          isChecked = value;
+        });
+      },
+    );
+  }
+
+  Widget policyText(BuildContext context) {
+    TextStyle defaultStyle = TextStyle(color: Colors.grey, fontSize: 20.0);
+    TextStyle linkStyle = TextStyle(color: Colors.blue);
+    return RichText(
+      text: TextSpan(
+        style: defaultStyle,
+        children: <TextSpan>[
+          TextSpan(text: 'To use this app, you must accept our '),
+          TextSpan(
+              text: 'Privacy Policy.',
+              style: linkStyle,
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  _launchURL();
+                }), /*
+          TextSpan(text: ' and that you have read our '),
+          TextSpan(
+              text: 'Privacy Policy',
+              style: linkStyle,
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  print('Privacy Policy"');
+                }),*/
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchURL() async {
+    const url = 'https://www.dirtysouth.at/privacy-policy-en/';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  checkPrivacyAccept(int method) {
+    if (!widget.isLoading && isChecked) {
+      if (method == 1) {
+        _signInGoogle(context);
+      } else {
+        _signInFacebook(context);
+      }
+    } else {
+      showAlertDialog(context, title: "Error", content: "To be able to use this app, you must accept our Privacy Policy", defaultActionText: "Ok");
+    }
+  }
+
   Widget _buildHeader() {
-    if (isLoading) {
+    if (widget.isLoading) {
       return Center(
         child: CircularProgressIndicator(),
       );
     }
     return Text(
-      'Sign In',
+      'Anmelden / Registrieren',
       textAlign: TextAlign.center,
       style: TextStyle(
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: FontWeight.bold,
         color: Colors.white,
       ),

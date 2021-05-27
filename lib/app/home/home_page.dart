@@ -280,7 +280,7 @@ class _HomePageState extends State<HomePage> {
                             Row(
                               children: [
                                 Text(
-                                  "Total points: ",
+                                  "My points: ",
                                   style: Theme.of(context).textTheme.subtitle1,
                                 ),
                                 Text(
