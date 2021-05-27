@@ -109,7 +109,7 @@ class _EditPointsState extends State<EditPoints> {
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.QR);
 
-      _addPoint(context, barcodeScanRes, points);
+      _addPoints(context, barcodeScanRes, points);
     } on PlatformException {
       barcodeScanRes = 'Failed to get platform version.';
     }
@@ -120,19 +120,35 @@ class _EditPointsState extends State<EditPoints> {
     if (!mounted) return;
   }
 
-  Future<void> _addPoint(BuildContext context, String scannedId, int points) async {
+  Future<void> _addPoints(BuildContext context, String scannedId, int scannedPoints) async {
     String timestamp = DateTime.now().toIso8601String();
     final auth = Provider.of<AuthBase>(context, listen: false);
-    final point = Point(points: points, timestamp: timestamp, userId: scannedId);
+    final pointsToAdd = Point(points: scannedPoints, timestamp: timestamp, userId: scannedId);
+    int totalPoints = await widget.database.getUserDoc(scannedId).then((value) => value['totalPoints']);
+    totalPoints = totalPoints + scannedPoints;
     try {
-      await widget.database.addPoints(point, scannedId, auth.currentUser.displayName, timestamp);
-      await widget.database.editTotalUserPoints(point, scannedId);
+      await widget.database.addPoints(pointsToAdd, scannedId, auth.currentUser.displayName, timestamp);
+      final totalPointsToAdd = Point(points: totalPoints, timestamp: timestamp, userId: scannedId);
+      await widget.database.editTotalUserPoints(totalPointsToAdd, scannedId);
+      showAlertDialog(
+        context,
+        title: 'Success!',
+        content: 'You have successfully added $scannedPoints points',
+        defaultActionText: 'Ok',
+      );
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         showExceptionAlert(
           context,
           title: 'You don\'t have permissions for this action',
           exception: e,
+        );
+      } else {
+        showAlertDialog(
+          context,
+          title: 'Error',
+          content: 'There was an error adding points, please try again later',
+          defaultActionText: 'Ok',
         );
       }
     }

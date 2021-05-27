@@ -4,8 +4,8 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="ds_loyalty_user"
-        android:icon="@mipmap/ic_launcher">
+        android:label="DS Loyalty"
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

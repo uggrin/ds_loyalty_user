@@ -1,5 +1,4 @@
 import 'package:ds_loyalty_user/app/sign_in/email_sign_in_page.dart';
-import 'package:ds_loyalty_user/app/sign_in/sign_in_button.dart';
 import 'package:ds_loyalty_user/app/sign_in/sign_in_manager.dart';
 import 'package:ds_loyalty_user/app/sign_in/social_sign_in_button.dart';
 import 'package:ds_loyalty_user/common_widgets/show_exception_alert.dart';
@@ -92,12 +91,7 @@ class SignInPage extends StatelessWidget {
           ),
         ),
         elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Image.asset('assets/images/dse-logo.jpg'),
-          ),
-        ],
+        actions: [],
       ),
       body: _buildContent(context),
       backgroundColor: Colors.black54,
@@ -157,7 +151,7 @@ class SignInPage extends StatelessWidget {
               width: MediaQuery.of(context).size.width - 180,
               onPressed: isLoading ? null : () => _signInFacebook(context),
             ),
-            SizedBox(height: 12),
+            /*SizedBox(height: 12),
             SignInButton(
               text: 'Email',
               textColor: Colors.black87,
@@ -165,7 +159,7 @@ class SignInPage extends StatelessWidget {
               height: 50,
               width: MediaQuery.of(context).size.width - 180,
               onPressed: isLoading ? null : () => _signInEmail(context),
-            ),
+            ),*/
             /*SizedBox(height: 12),
             Text(
               'or',

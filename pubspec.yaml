@@ -22,11 +22,17 @@ dependencies:
   cloud_firestore: 0.14.3
   flutter_barcode_scanner: ^1.0.1
   flutter_slidable: ^0.5.7
+  flutter_launcher_icons: 0.8.1
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
 
 flutter:
   uses-material-design: true
