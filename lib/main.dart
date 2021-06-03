@@ -27,16 +27,16 @@ class DsApp extends StatelessWidget {
           fontFamily: 'Oswald',
           textTheme: TextTheme(
             headline1: TextStyle(fontSize: 34.0, fontWeight: FontWeight.bold, color: Boja.textondark),
-            headline2: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold, color: Boja.textondark, fontStyle: FontStyle.italic),
-            headline3: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Boja.dsaccent[600], fontStyle: FontStyle.italic),
-            headline6: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w800, color: Boja.textondarkAccent, fontStyle: FontStyle.italic),
+            headline2: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold, color: Boja.textondark),
+            headline3: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Boja.dsaccent[600]),
+            headline6: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w800, color: Boja.textondarkAccent),
             bodyText1: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400, fontFamily: 'Oswald', color: Boja.textondarkAccent),
             bodyText2: TextStyle(fontSize: 14.0),
-            overline: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w800, color: Boja.dsaccent[200], fontStyle: FontStyle.italic),
-            subtitle1: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w800, color: Boja.dsaccent[200], fontStyle: FontStyle.italic),
-            subtitle2: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w800, color: Boja.dsaccent[100], fontStyle: FontStyle.italic),
+            overline: TextStyle(fontSize: 22.0, fontWeight: FontWeight.w800, color: Boja.dsaccent[100]),
+            subtitle1: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w800, color: Boja.dsaccent[50]),
+            subtitle2: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w800, color: Boja.dsaccent[100]),
           ),
-          primaryTextTheme: GoogleFonts.oswaldTextTheme(
+          primaryTextTheme: GoogleFonts.robotoTextTheme(
             Theme.of(context).textTheme,
           ),
         ),

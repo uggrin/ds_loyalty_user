@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ds_loyalty_user/services/api_paths.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_login_facebook/flutter_login_facebook.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 abstract class AuthBase {
@@ -28,6 +28,7 @@ abstract class AuthBase {
 class Auth implements AuthBase {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+  AccessToken _accessToken;
 
   @override
   Stream<User> authStateChanges() => _firebaseAuth.authStateChanges();
@@ -130,41 +131,127 @@ class Auth implements AuthBase {
     }
   }
 
-  @override
+  /*final fbLogin = FacebookLogin();
+
   Future<User> signInFacebook() async {
-    final fb = FacebookLogin();
-    final response = await fb.logIn(permissions: [
-      FacebookPermission.publicProfile,
-      FacebookPermission.email,
-    ]);
-    switch (response.status) {
-      case FacebookLoginStatus.Success:
-        final accessToken = response.accessToken;
-        final userCredential = await _firebaseAuth.signInWithCredential(
-          FacebookAuthProvider.credential(accessToken.token),
-        );
-        return userCredential.user;
-      case FacebookLoginStatus.Cancel:
-        throw FirebaseAuthException(
-          code: 'ERROR_ABORTED_BY_USER',
-          message: 'Sign in aborted by user.',
-        );
-      case FacebookLoginStatus.Error:
-        throw FirebaseAuthException(
-          code: 'ERROR_FACEBOOK_LOGIN_FAILED',
-          message: response.error.developerMessage,
-        );
-      default:
-        throw UnimplementedError();
+    final FacebookLoginResult result = await fbLogin.logIn(["email"]);
+    final String token = result.accessToken.token;
+    final response = await http.get('https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${token}');
+    final profile = jsonDecode(response.body);
+    print(profile);
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        final FacebookAccessToken accessToken = result.accessToken;
+        DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(accessToken.userId).get();
+        print('User id: ${accessToken.userId} /n Expires: ${accessToken.expires} /n Permissions: ${accessToken.permissions}');
+        if (!snapshot.exists) {
+          await _firestore.collection(APIPath.users()).doc(accessToken.userId).set({
+            'id': accessToken.userId,
+            'email': profile['email'],
+            'fullName': profile['name'],
+            'phoneNumber': '',
+            'totalPoints': 0,
+            'accepted_policy': true,
+            //'photoUrl': userCredential.user.photoURL,
+            //'providerData': userCredential.user.providerData,
+          });
+        }
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        print('Login cancelled by the user.');
+        break;
+      case FacebookLoginStatus.error:
+        print('Something went wrong with the login process.\n'
+            'Here\'s the error Facebook gave us: ${result.errorMessage}');
+        break;
     }
+
+    return profile;
+  }*/
+
+  /*@override
+  Future<User> signInFacebook() async {
+    final LoginResult result = await FacebookAuth.instance.login();
+
+    // loginBehavior is only supported for Android devices, for ios it will be ignored
+    */ /*final result = await FacebookAuth.instance.login(
+      permissions: ['email', 'public_profile'],
+      loginBehavior: LoginBehavior.DIALOG_ONLY, // (only android) show an authentication dialog instead of redirecting to facebook app
+    );*/ /*
+
+    if (result.status == LoginStatus.success) {
+      _accessToken = result.accessToken;
+      // get the user data
+      // by default we get the userId, email,name and picture
+      //final userData = await FacebookAuth.instance.getUserData();
+      final userData = await FacebookAuth.instance.getUserData(fields: "email,birthday,friends,gender,link");
+      final userCredential = await _firebaseAuth.signInWithCredential(FacebookAuthProvider.credential(_accessToken.token));
+      print("USER SUCCESS!");
+      print(userData);
+      DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(userCredential.user.uid).get();
+      if (!snapshot.exists) {
+        await _firestore.collection(APIPath.users()).doc(userCredential.user.uid).set({
+          'id': userCredential.user.uid,
+          'email': userCredential.user.email,
+          'fullName': userCredential.user.displayName,
+          'phoneNumber': userCredential.user.phoneNumber,
+          'totalPoints': 0,
+          'accepted_policy': true,
+          //'photoUrl': userCredential.user.photoURL,
+          //'providerData': userCredential.user.providerData,
+        });
+      }
+      throw FirebaseAuthException(
+        code: 'ERROR_FACEBOOK_LOGIN_FAILED',
+        message: result.message,
+      );
+    } else {
+      print("FACEBOOK STATUS" + result.status.toString());
+      print("FACEBOOK MESSAGE" + result.message);
+      throw UnimplementedError();
+    }
+  }*/
+
+  Future<void> _logOut() async {
+    await FacebookAuth.instance.logOut();
+    _accessToken = null;
+  }
+
+  Future<User> signInFacebook() async {
+    // Trigger the sign-in flow
+    final AccessToken result = await FacebookAuth.instance.login();
+
+    // Create a credential from the access token
+    final facebookAuthCredential = FacebookAuthProvider.credential(result.token);
+
+    // Once signed in, return the UserCredential
+    final _userCredential = await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+
+    DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(_userCredential.user.uid).get();
+    if (!snapshot.exists) {
+      await _firestore.collection(APIPath.users()).doc(_userCredential.user.uid).set({
+        'id': _userCredential.user.uid,
+        'email': _userCredential.user.email,
+        'fullName': _userCredential.user.displayName,
+        'phoneNumber': _userCredential.user.phoneNumber,
+        'totalPoints': 0,
+        'accepted_policy': true,
+        //'photoUrl': userCredential.user.photoURL,
+        //'providerData': userCredential.user.providerData,
+      });
+    }
+
+    print('USERCREDS');
+    print(_userCredential);
+
+    return _userCredential.user;
   }
 
   @override
   Future<void> signOut() async {
     final googleSignIn = GoogleSignIn();
     await googleSignIn.signOut();
-    final facebookLogin = FacebookLogin();
-    await facebookLogin.logOut();
+    await _logOut();
     await _firebaseAuth.signOut();
   }
 }

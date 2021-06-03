@@ -50,10 +50,10 @@ class _HomePageState extends State<HomePage> {
   Future<void> _confirmSignOut(BuildContext context) async {
     final didRequestSignout = await showAlertDialog(
       context,
-      title: 'Logout',
-      content: 'Are you sure?',
-      cancelActionText: 'Cancel',
-      defaultActionText: 'Logout',
+      title: 'Abmelden',
+      content: 'Sind Sie sicher?',
+      cancelActionText: 'Abbrechen',
+      defaultActionText: 'Abmelden',
     );
     if (didRequestSignout == true) {
       _signOut(context);
@@ -82,7 +82,7 @@ class _HomePageState extends State<HomePage> {
     String timestamp = DateTime.now().toIso8601String();
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      scannedId = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.QR);
+      scannedId = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Abbrechen", true, ScanMode.QR);
 
       RegExpMatch regexQR = RegExpressions.scannedQRegex.firstMatch(scannedId);
       String userId = regexQR.group(1);
@@ -93,8 +93,8 @@ class _HomePageState extends State<HomePage> {
         if (totalPoints < 0) {
           showAlertDialog(
             context,
-            title: 'Not enough points!',
-            content: 'Scanned user doesn\'t have enough points to use this offer.',
+            title: 'Nicht genug Punkte!',
+            content: 'Der gescannte Benutzer hat nicht genug Punkte, um dieses Angebot zu nutzen.',
             defaultActionText: 'Ok',
           );
         } else {
@@ -133,7 +133,7 @@ class _HomePageState extends State<HomePage> {
       if (e.code == 'permission-denied') {
         showExceptionAlert(
           context,
-          title: 'You don\'t have permissions',
+          title: 'You don\'t have these permissions',
           exception: e,
         );
       }
@@ -161,7 +161,7 @@ class _HomePageState extends State<HomePage> {
     if (isAdmin) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Home'),
+          title: Text('Heim'),
           actions: [
             TextButton(
               onPressed: () => _confirmSignOut(context),
@@ -178,28 +178,28 @@ class _HomePageState extends State<HomePage> {
               child: _buildOffers(context),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () => EditOffer.show(context),
-                  child: Icon(
-                    Icons.add,
-                    size: 22,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-            Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 CustomButton(
-                  child: Text('Redeem points'),
+                  onPressed: () => EditOffer.show(context),
+                  child: Row(
+                    children: [
+                      Text('Angebote'),
+                      Icon(
+                        Icons.add,
+                        size: 22,
+                        color: Colors.black,
+                      ),
+                    ],
+                  ),
+                ),
+                CustomButton(
+                  child: Text('Einlösen'),
                   borderRadius: 0,
                   onPressed: _scanToRedeemPoints,
                 ),
                 CustomButton(
-                  child: Text('Add points'),
+                  child: Text('Hinzufügen'),
                   borderRadius: 0,
                   onPressed: () => EditPoints.show(context),
                 ),
@@ -246,7 +246,7 @@ class _HomePageState extends State<HomePage> {
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Home'),
+          title: Text('Heim'),
           actions: [
             TextButton(
               onPressed: () => _confirmSignOut(context),
@@ -273,14 +273,20 @@ class _HomePageState extends State<HomePage> {
                         Map<String, dynamic> documentFields = snapshot.data.data();
                         return Column(
                           children: [
-                            Text(
-                              documentFields['fullName'].toString(),
-                              style: Theme.of(context).textTheme.overline,
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  documentFields['fullName'].toString(),
+                                  style: Theme.of(context).textTheme.overline,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                             Row(
                               children: [
                                 Text(
-                                  "My points: ",
+                                  "Meine Punkte: ",
                                   style: Theme.of(context).textTheme.subtitle1,
                                 ),
                                 Text(
@@ -292,7 +298,7 @@ class _HomePageState extends State<HomePage> {
                           ],
                         );
                       } else {
-                        return Text('Error...');
+                        return Text('Fehler...');
                       }
                     }),
                 /*StreamBuilder<DocumentSnapshot>(

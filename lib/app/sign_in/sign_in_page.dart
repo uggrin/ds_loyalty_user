@@ -220,24 +220,17 @@ class _SignInPageState extends State<SignInPage> {
     TextStyle linkStyle = TextStyle(color: Colors.blue);
     return RichText(
       text: TextSpan(
-        style: defaultStyle,
+        style: TextStyle(color: Colors.white, fontSize: 14),
         children: <TextSpan>[
-          TextSpan(text: 'To use this app, you must accept our '),
-          TextSpan(
-              text: 'Privacy Policy.',
-              style: linkStyle,
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  _launchURL();
-                }), /*
-          TextSpan(text: ' and that you have read our '),
+          TextSpan(text: 'Um diese App zu nutzen, müssen Sie unsere '),
           TextSpan(
               text: 'Privacy Policy',
               style: linkStyle,
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  print('Privacy Policy"');
-                }),*/
+                  _launchURL();
+                }),
+          TextSpan(text: ' akzeptieren.'),
         ],
       ),
     );
@@ -260,7 +253,8 @@ class _SignInPageState extends State<SignInPage> {
         _signInFacebook(context);
       }
     } else {
-      showAlertDialog(context, title: "Error", content: "To be able to use this app, you must accept our Privacy Policy", defaultActionText: "Ok");
+      showAlertDialog(context,
+          title: "Error", content: "Um diese App nutzen zu können, müssen Sie unsere Datenschutzrichtlinie akzeptieren", defaultActionText: "Ok");
     }
   }
 

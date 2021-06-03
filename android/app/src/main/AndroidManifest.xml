@@ -2,6 +2,7 @@
     package="at.uggrinsqd.dsloyalty.ds_loyalty_user">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="DS Loyalty"
@@ -43,6 +44,7 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
+
 
         <meta-data
             android:name="flutterEmbedding"
