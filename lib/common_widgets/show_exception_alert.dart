@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 
 Future<void> showExceptionAlert(
   BuildContext context, {
-  @required String title,
-  @required Exception exception,
+  required String title,
+  required Exception exception,
 }) =>
     showAlertDialog(
       context,
@@ -14,7 +14,7 @@ Future<void> showExceptionAlert(
       defaultActionText: 'OK',
     );
 
-String _message(Exception exception) {
+String? _message(Exception exception) {
   if (exception is FirebaseException) {
     return exception.message;
   }

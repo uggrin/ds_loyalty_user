@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({Key key, @required this.manager, @required this.isLoading}) : super(key: key);
+  const SignInPage({Key? key, required this.manager, required this.isLoading}) : super(key: key);
   final SignInManager manager;
   final bool isLoading;
 
@@ -187,7 +187,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  bool isChecked = false;
+  bool? isChecked = false;
 
   @override
   Widget policyBox(BuildContext context) {
@@ -207,7 +207,7 @@ class _SignInPageState extends State<SignInPage> {
       checkColor: Colors.grey[900],
       fillColor: MaterialStateProperty.resolveWith(getColor),
       value: isChecked,
-      onChanged: (bool value) {
+      onChanged: (bool? value) {
         setState(() {
           isChecked = value;
         });
@@ -246,7 +246,7 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   checkPrivacyAccept(int method) {
-    if (!widget.isLoading && isChecked) {
+    if (!widget.isLoading && isChecked!) {
       if (method == 1) {
         _signInGoogle(context);
       } else {

@@ -19,12 +19,12 @@ class EmailSignInModel with EmailAndPasswordValidators {
 
   final String email;
   final String password;
-  final String fullName;
-  final String birthday;
-  final String country;
-  final String city;
-  final String address;
-  final String phoneNumber;
+  final String? fullName;
+  final String? birthday;
+  final String? country;
+  final String? city;
+  final String? address;
+  final String? phoneNumber;
   final EmailSignInFormType formType;
   final bool isLoading;
   final bool submitted;
@@ -47,48 +47,48 @@ class EmailSignInModel with EmailAndPasswordValidators {
         !isLoading;
   }
 
-  String get passwordErrorText {
+  String? get passwordErrorText {
     bool showErrorText = submitted && !passwordValidator.isValid(password);
     return showErrorText ? invalidPasswordErrorText : null;
   }
 
-  String get emailErrorText {
+  String? get emailErrorText {
     bool showErrorText = submitted && !emailValidator.isValid(email);
     return showErrorText ? invalidEmailErrorText : null;
   }
 
-  String get nameErrorText {
+  String? get nameErrorText {
     bool showErrorText = submitted && !nameValidator.isValid(fullName);
     return showErrorText ? invalidNameErrorText : null;
   }
 
-  String get countryErrorText {
+  String? get countryErrorText {
     bool showErrorText = submitted && !countryValidator.isValid(country);
     return showErrorText ? invalidCountryErrorText : null;
   }
 
-  String get cityErrorText {
+  String? get cityErrorText {
     bool showErrorText = submitted && !cityValidator.isValid(city);
     return showErrorText ? invalidCityErrorText : null;
   }
 
-  String get addressErrorText {
+  String? get addressErrorText {
     bool showErrorText = submitted && !addressValidator.isValid(address);
     return showErrorText ? invalidAddressErrorText : null;
   }
 
   EmailSignInModel copyWith({
-    String email,
-    String password,
-    String fullName,
-    String birthday,
-    String country,
-    String city,
-    String address,
-    String phoneNumber,
-    EmailSignInFormType formType,
-    bool isLoading,
-    bool submitted,
+    String? email,
+    String? password,
+    String? fullName,
+    String? birthday,
+    String? country,
+    String? city,
+    String? address,
+    String? phoneNumber,
+    EmailSignInFormType? formType,
+    bool? isLoading,
+    bool? submitted,
   }) {
     return EmailSignInModel(
       email: email ?? this.email,

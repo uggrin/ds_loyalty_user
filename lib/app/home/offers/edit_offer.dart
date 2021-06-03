@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class EditOffer extends StatefulWidget {
-  const EditOffer({Key key, @required this.database, this.offer}) : super(key: key);
+  const EditOffer({Key? key, required this.database, this.offer}) : super(key: key);
   final Database database;
-  final Offer offer;
+  final Offer? offer;
 
-  static Future<void> show(BuildContext context, {Offer offer}) async {
+  static Future<void> show(BuildContext context, {Offer? offer}) async {
     final database = Provider.of<Database>(context, listen: false);
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => EditOffer(
@@ -29,20 +29,20 @@ class EditOffer extends StatefulWidget {
 class _EditOfferState extends State<EditOffer> {
   final _formKey = GlobalKey<FormState>();
 
-  String _name;
-  int _pointCost;
+  String? _name;
+  int? _pointCost;
 
   @override
   void initState() {
     super.initState();
     if (widget.offer != null) {
-      _name = widget.offer.name;
-      _pointCost = widget.offer.pointCost;
+      _name = widget.offer!.name;
+      _pointCost = widget.offer!.pointCost;
     }
   }
 
   bool _validateAndSaveForm() {
-    final form = _formKey.currentState;
+    final form = _formKey.currentState!;
     if (form.validate()) {
       form.save();
       return true;
@@ -56,7 +56,7 @@ class _EditOfferState extends State<EditOffer> {
         final offers = await widget.database.offersStream().first;
         final allNames = offers.map((offer) => offer.name).toList();
         if (widget.offer != null) {
-          allNames.remove(widget.offer.name);
+          allNames.remove(widget.offer!.name);
         }
         if (allNames.contains(_name)) {
           showAlertDialog(context, title: 'Title already used', content: 'Enter different title', defaultActionText: 'Ok');
@@ -127,7 +127,7 @@ class _EditOfferState extends State<EditOffer> {
         decoration: InputDecoration(
           labelText: 'Offer name',
         ),
-        validator: (value) => value.isNotEmpty ? null : 'Name can\'t be empty',
+        validator: (value) => value!.isNotEmpty ? null : 'Name can\'t be empty',
         onSaved: (value) => _name = value,
         textInputAction: TextInputAction.next,
       ),
@@ -136,8 +136,8 @@ class _EditOfferState extends State<EditOffer> {
           labelText: 'Cost',
         ),
         initialValue: _pointCost != null ? '$_pointCost' : null,
-        validator: (value) => value.isNotEmpty ? null : 'Cost can\'t be empty',
-        onSaved: (value) => _pointCost = int.tryParse(value) ?? 0,
+        validator: (value) => value!.isNotEmpty ? null : 'Cost can\'t be empty',
+        onSaved: (value) => _pointCost = int.tryParse(value!) ?? 0,
         textInputAction: TextInputAction.done,
         onEditingComplete: _submit,
         keyboardType: TextInputType.numberWithOptions(

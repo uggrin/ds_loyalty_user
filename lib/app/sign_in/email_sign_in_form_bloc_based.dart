@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class EmailSignInFormBloc extends StatefulWidget {
-  EmailSignInFormBloc({@required this.bloc});
+  EmailSignInFormBloc({required this.bloc});
   final EmailSignInBloc bloc;
 
   static Widget create(BuildContext context) {
@@ -131,7 +131,7 @@ class _EmailSignInFormBlocState extends State<EmailSignInFormBloc> {
         stream: widget.bloc.modelStream,
         initialData: EmailSignInModel(),
         builder: (context, snapshot) {
-          final EmailSignInModel model = snapshot.data;
+          final EmailSignInModel model = snapshot.data!;
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(

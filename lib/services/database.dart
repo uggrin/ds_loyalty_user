@@ -10,31 +10,31 @@ import 'package:flutter/foundation.dart';
 
 abstract class Database {
   Future<void> setOffer(Offer job);
-  Future<void> addPoints(Point point, String scannedId, String admin, String timestamp);
-  Future<void> editTotalUserPoints(Point point, String scannedId);
+  Future<void> addPoints(Point point, String? scannedId, String? admin, String timestamp);
+  Future<void> editTotalUserPoints(Point point, String? scannedId);
   Stream<List<Offer>> offersStream();
   Future<void> deleteOffer(Offer job);
-  Future<DocumentSnapshot> getUserDoc(String scannedId);
+  Future<DocumentSnapshot> getUserDoc(String? scannedId);
   //Future<bool> checkUserRole(String userId, BuildContext context);
 }
 
 String documentTimestamp() => DateTime.now().toIso8601String();
 
 class FirestoreDatabase implements Database {
-  FirestoreDatabase({@required this.uid}) : assert(uid != null);
+  FirestoreDatabase({required this.uid}) : assert(uid != null);
 
   final String uid;
 
   final _service = FirestoreService.instance;
 
   @override
-  Future<void> addPoints(Point point, String scannedId, String adminName, String timestamp) => _service.setData(
+  Future<void> addPoints(Point point, String? scannedId, String? adminName, String timestamp) => _service.setData(
         path: APIPath.point(scannedId, timestamp),
         data: point.pointToMap(scannedId, uid, adminName),
       );
 
   @override
-  Future<void> editTotalUserPoints(Point point, String scannedId) => _service.updateData(
+  Future<void> editTotalUserPoints(Point point, String? scannedId) => _service.updateData(
         path: APIPath.user(scannedId),
         data: point.pointToMapDoc(scannedId),
       );
@@ -56,7 +56,7 @@ class FirestoreDatabase implements Database {
         builder: (data, documentId) => Offer.fromMap(data, documentId),
       );
 
-  Future<DocumentSnapshot> getUserDoc(String scannedId) async {
+  Future<DocumentSnapshot> getUserDoc(String? scannedId) async {
     return await FirebaseFirestore.instance.doc(APIPath.user(scannedId)).get().then((value) => value);
   }
 }

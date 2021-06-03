@@ -5,45 +5,45 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 abstract class AuthBase {
-  User get currentUser;
-  Future<User> signInAnonimously();
-  Future<User> createUserEmail(String email, String password);
+  User? get currentUser;
+  Future<User?> signInAnonimously();
+  Future<User?> createUserEmail(String email, String password);
   Future<User> createUser(
     String email,
     String password,
-    String fullName,
-    String birthday,
-    String country,
-    String city,
-    String address,
-    String phoneNumber,
+    String? fullName,
+    String? birthday,
+    String? country,
+    String? city,
+    String? address,
+    String? phoneNumber,
   );
-  Future<User> signInEmail(String email, String password);
-  Future<User> signInGoogle();
+  Future<User?> signInEmail(String email, String password);
+  Future<User?> signInGoogle();
   Future<User> signInFacebook();
-  Stream<User> authStateChanges();
+  Stream<User?> authStateChanges();
   Future<void> signOut();
 }
 
 class Auth implements AuthBase {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  AccessToken _accessToken;
+  AccessToken? _accessToken;
 
   @override
-  Stream<User> authStateChanges() => _firebaseAuth.authStateChanges();
+  Stream<User?> authStateChanges() => _firebaseAuth.authStateChanges();
 
   @override
-  User get currentUser => _firebaseAuth.currentUser;
+  User? get currentUser => _firebaseAuth.currentUser;
 
   @override
-  Future<User> signInAnonimously() async {
+  Future<User?> signInAnonimously() async {
     final userCredential = await _firebaseAuth.signInAnonymously();
     return userCredential.user;
   }
 
   @override
-  Future<User> signInEmail(String email, String password) async {
+  Future<User?> signInEmail(String email, String password) async {
     final userCredential = await _firebaseAuth.signInWithCredential(
       EmailAuthProvider.credential(email: email, password: password),
     );
@@ -51,7 +51,7 @@ class Auth implements AuthBase {
   }
 
   @override
-  Future<User> createUserEmail(String email, String password) async {
+  Future<User?> createUserEmail(String email, String password) async {
     final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
@@ -62,19 +62,19 @@ class Auth implements AuthBase {
   Future<User> createUser(
     String email,
     String password,
-    String fullName,
-    String birthday,
-    String country,
-    String city,
-    String address,
-    String phoneNumber,
+    String? fullName,
+    String? birthday,
+    String? country,
+    String? city,
+    String? address,
+    String? phoneNumber,
   ) async {
     try {
       final User user = (await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       ))
-          .user;
+          .user!;
 
       user.sendEmailVerification();
 
@@ -92,13 +92,12 @@ class Auth implements AuthBase {
 
       return user;
     } catch (e) {
-      print(e);
-      print("failed");
+      throw (e);
     }
   }
 
   @override
-  Future<User> signInGoogle() async {
+  Future<User?> signInGoogle() async {
     final googleSignIn = GoogleSignIn();
     final googleUser = await googleSignIn.signIn();
 
@@ -109,13 +108,13 @@ class Auth implements AuthBase {
           idToken: googleAuth.idToken,
           accessToken: googleAuth.accessToken,
         ));
-        DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(userCredential.user.uid).get();
+        DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(userCredential.user!.uid).get();
         if (!snapshot.exists) {
-          await _firestore.collection(APIPath.users()).doc(userCredential.user.uid).set({
-            'id': userCredential.user.uid,
-            'email': userCredential.user.email,
-            'fullName': userCredential.user.displayName,
-            'phoneNumber': userCredential.user.phoneNumber,
+          await _firestore.collection(APIPath.users()).doc(userCredential.user!.uid).set({
+            'id': userCredential.user!.uid,
+            'email': userCredential.user!.email,
+            'fullName': userCredential.user!.displayName,
+            'phoneNumber': userCredential.user!.phoneNumber,
             'totalPoints': 0,
             'accepted_policy': true,
             //'photoUrl': userCredential.user.photoURL,
@@ -239,15 +238,17 @@ class Auth implements AuthBase {
 */
 
   Future<User> signInFacebook() async {
-    /*final LoginResult result = await FacebookAuth.instance.login();
+    final LoginResult result = await FacebookAuth.instance.login();
     if (result.status == LoginStatus.success) {
       // Create a credential from the access token
-      final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken.token);
+      final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.token);
       // Once signed in, return the UserCredential
       final _userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-      return _userCredential.user;
+
+      return _userCredential.user!;
+    } else {
+      throw ('Error signing in with Facebook!');
     }
-    return null;*/
   }
 
   Future<void> _logOut() async {

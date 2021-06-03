@@ -12,12 +12,12 @@ import 'package:numberpicker/numberpicker.dart';
 import 'package:provider/provider.dart';
 
 class EditPoints extends StatefulWidget {
-  const EditPoints({Key key, this.database, this.point}) : super(key: key);
+  const EditPoints({Key? key, this.database, this.point}) : super(key: key);
 
-  final Database database;
-  final Point point;
+  final Database? database;
+  final Point? point;
 
-  static Future<void> show(BuildContext context, {Point point}) async {
+  static Future<void> show(BuildContext context, {Point? point}) async {
     final database = Provider.of<Database>(context, listen: false);
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => EditPoints(
@@ -155,12 +155,12 @@ class _EditPointsState extends State<EditPoints> {
     String timestamp = DateTime.now().toIso8601String();
     final auth = Provider.of<AuthBase>(context, listen: false);
     final pointsToAdd = Point(points: scannedPoints, timestamp: timestamp, userId: scannedId);
-    int totalPoints = await widget.database.getUserDoc(scannedId).then((value) => value['totalPoints']);
+    int totalPoints = await widget.database!.getUserDoc(scannedId).then((value) => value['totalPoints']);
     totalPoints = totalPoints + scannedPoints;
     try {
-      await widget.database.addPoints(pointsToAdd, scannedId, auth.currentUser.displayName, timestamp);
+      await widget.database!.addPoints(pointsToAdd, scannedId, auth.currentUser!.displayName, timestamp);
       final totalPointsToAdd = Point(points: totalPoints, timestamp: timestamp, userId: scannedId);
-      await widget.database.editTotalUserPoints(totalPointsToAdd, scannedId);
+      await widget.database!.editTotalUserPoints(totalPointsToAdd, scannedId);
       showAlertDialog(
         context,
         title: 'Success!',

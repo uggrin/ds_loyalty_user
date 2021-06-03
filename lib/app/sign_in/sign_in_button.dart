@@ -5,10 +5,10 @@ class SignInButton extends CustomButton {
   final double height;
   final double width;
   SignInButton({
-    @required String text,
-    Color color,
-    Color textColor,
-    VoidCallback onPressed,
+    required String text,
+    Color? color,
+    Color? textColor,
+    VoidCallback? onPressed,
     this.height: 50,
     this.width: 200,
   })  : assert(text != null),

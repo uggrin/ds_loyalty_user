@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'email_sign_in_change_model.dart';
 
 class EmailSignInFormChangeNotifier extends StatefulWidget {
-  EmailSignInFormChangeNotifier({@required this.model});
+  EmailSignInFormChangeNotifier({required this.model});
   final EmailSignInChangeModel model;
 
   static Widget create(BuildContext context) {

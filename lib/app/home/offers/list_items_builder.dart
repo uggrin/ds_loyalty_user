@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 typedef ItemWidgetBuilder<T> = Widget Function(BuildContext context, T item);
 
 class ListItemsBuilder<T> extends StatelessWidget {
-  const ListItemsBuilder({Key key, @required this.snapshot, this.itemBuilder}) : super(key: key);
+  const ListItemsBuilder({Key? key, required this.snapshot, this.itemBuilder}) : super(key: key);
 
   final AsyncSnapshot<List<T>> snapshot;
-  final ItemWidgetBuilder<T> itemBuilder;
+  final ItemWidgetBuilder<T>? itemBuilder;
 
   @override
   Widget build(BuildContext context) {
     if (snapshot.hasData) {
-      final List<T> items = snapshot.data;
+      final List<T> items = snapshot.data!;
       if (items.isNotEmpty) {
         return _buildList(items);
       } else {
@@ -35,7 +35,7 @@ class ListItemsBuilder<T> extends StatelessWidget {
         if (index == 0 || index == items.length + 1) {
           return Container();
         }
-        return itemBuilder(context, items[index - 1]);
+        return itemBuilder!(context, items[index - 1]);
       },
     );
   }

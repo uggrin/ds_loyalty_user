@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import '../models/offer.dart';
 
 class OffersPage extends StatelessWidget {
-  const OffersPage({Key key}) : super(key: key);
+  const OffersPage({Key? key}) : super(key: key);
 
   Future<void> _signOut(BuildContext context) async {
     try {

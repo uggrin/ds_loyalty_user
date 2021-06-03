@@ -7,25 +7,25 @@ import 'input_dropdown.dart';
 
 class DatePicker extends StatelessWidget {
   const DatePicker({
-    Key key,
+    Key? key,
     this.labelText,
     this.selectedDate,
     this.onSelectedDate,
   }) : super(key: key);
 
-  final String labelText;
-  final DateTime selectedDate;
-  final ValueChanged<DateTime> onSelectedDate;
+  final String? labelText;
+  final DateTime? selectedDate;
+  final ValueChanged<DateTime>? onSelectedDate;
 
   Future<void> _selectDate(BuildContext context) async {
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: selectedDate!,
       firstDate: DateTime(2020, 1),
       lastDate: DateTime(2100),
     );
     if (pickedDate != null && pickedDate != selectedDate) {
-      onSelectedDate(pickedDate);
+      onSelectedDate!(pickedDate);
     }
   }
 
@@ -39,7 +39,7 @@ class DatePicker extends StatelessWidget {
           flex: 5,
           child: InputDropdown(
             labelText: labelText,
-            valueText: Format.date(selectedDate),
+            valueText: Format.date(selectedDate!),
             valueStyle: valueStyle,
             onPressed: () => _selectDate(context),
           ),

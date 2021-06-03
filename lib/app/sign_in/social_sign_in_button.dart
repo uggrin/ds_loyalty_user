@@ -5,11 +5,11 @@ class SocialSignInButton extends CustomButton {
   final double height;
   final double width;
   SocialSignInButton({
-    @required String assetName,
-    String text,
-    Color color,
-    Color textColor,
-    VoidCallback onPressed,
+    required String assetName,
+    required String text,
+    Color? color,
+    Color? textColor,
+    VoidCallback? onPressed,
     this.height: 50,
     this.width: 200,
   })  : assert(assetName != null),

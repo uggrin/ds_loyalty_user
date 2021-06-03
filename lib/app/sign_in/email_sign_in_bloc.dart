@@ -5,7 +5,7 @@ import 'package:ds_loyalty_user/services/auth.dart';
 import 'package:flutter/foundation.dart';
 
 class EmailSignInBloc {
-  EmailSignInBloc({@required this.auth});
+  EmailSignInBloc({required this.auth});
   final AuthBase auth;
 
   final StreamController<EmailSignInModel> _modelController = StreamController<EmailSignInModel>();
@@ -63,17 +63,17 @@ class EmailSignInBloc {
   void updateName(String fullName) => updateWith(fullName: fullName);
 
   void updateWith({
-    String email,
-    String password,
-    String fullName,
-    String birthday,
-    String country,
-    String city,
-    String address,
-    String phoneNumber,
-    EmailSignInFormType formType,
-    bool isLoading,
-    bool submitted,
+    String? email,
+    String? password,
+    String? fullName,
+    String? birthday,
+    String? country,
+    String? city,
+    String? address,
+    String? phoneNumber,
+    EmailSignInFormType? formType,
+    bool? isLoading,
+    bool? submitted,
   }) {
     // update model
     _model = _model.copyWith(

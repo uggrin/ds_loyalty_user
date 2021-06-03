@@ -6,7 +6,7 @@ import 'email_sign_in_model.dart';
 
 class EmailSignInChangeModel with EmailAndPasswordValidators, ChangeNotifier {
   EmailSignInChangeModel({
-    @required this.auth,
+    required this.auth,
     this.email = '',
     this.password = '',
     this.fullName = '',
@@ -73,42 +73,42 @@ class EmailSignInChangeModel with EmailAndPasswordValidators, ChangeNotifier {
     return emailValidator.isValid(email) && passwordValidator.isValid(password) && !isLoading;
   }
 
-  String get passwordErrorText {
+  String? get passwordErrorText {
     bool showErrorText = submitted && !passwordValidator.isValid(password);
     return showErrorText ? invalidPasswordErrorText : null;
   }
 
-  String get emailErrorText {
+  String? get emailErrorText {
     bool showErrorText = submitted && !emailValidator.isValid(email);
     return showErrorText ? invalidEmailErrorText : null;
   }
 
-  String get nameErrorText {
+  String? get nameErrorText {
     bool showErrorText = submitted && !nameValidator.isValid(fullName);
     return showErrorText ? invalidNameErrorText : null;
   }
 
-  String get birthdayErrorText {
+  String? get birthdayErrorText {
     bool showErrorText = submitted && !birthdayValidator.isValid(birthday);
     return showErrorText ? invalidBirthdayErrorText : null;
   }
 
-  String get countryErrorText {
+  String? get countryErrorText {
     bool showErrorText = submitted && !countryValidator.isValid(country);
     return showErrorText ? countryErrorText : null;
   }
 
-  String get cityErrorText {
+  String? get cityErrorText {
     bool showErrorText = submitted && !cityValidator.isValid(city);
     return showErrorText ? cityErrorText : null;
   }
 
-  String get addressErrorText {
+  String? get addressErrorText {
     bool showErrorText = submitted && !addressValidator.isValid(address);
     return showErrorText ? addressErrorText : null;
   }
 
-  String get phoneErrorText {
+  String? get phoneErrorText {
     bool showErrorText = submitted && !phoneValidator.isValid(phoneNumber);
     return showErrorText ? phoneErrorText : null;
   }
@@ -140,17 +140,17 @@ class EmailSignInChangeModel with EmailAndPasswordValidators, ChangeNotifier {
   void updatePhone(String phoneNumber) => updateWith(phoneNumber: phoneNumber);
 
   void updateWith({
-    String email,
-    String password,
-    String fullName,
-    String birthday,
-    String country,
-    String city,
-    String address,
-    String phoneNumber,
-    EmailSignInFormType formType,
-    bool isLoading,
-    bool submitted,
+    String? email,
+    String? password,
+    String? fullName,
+    String? birthday,
+    String? country,
+    String? city,
+    String? address,
+    String? phoneNumber,
+    EmailSignInFormType? formType,
+    bool? isLoading,
+    bool? submitted,
   }) {
     this.email = email ?? this.email;
     this.password = password ?? this.password;

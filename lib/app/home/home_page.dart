@@ -23,7 +23,7 @@ import 'offers/list_items_builder.dart';
 import 'offers/offer_list_tile.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({Key key}) : super(key: key);
+  HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -60,10 +60,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<bool> checkUserRole() async {
+  Future checkUserRole() async {
     final auth = Provider.of<AuthBase>(context, listen: false);
     try {
-      final snapshot = await FirebaseFirestore.instance.collection(APIPath.admin()).doc(auth.currentUser.uid).get();
+      final snapshot = await FirebaseFirestore.instance.collection(APIPath.admin()).doc(auth.currentUser!.uid).get();
       this.setState(() {
         isAdmin = snapshot.exists;
       });
@@ -84,9 +84,9 @@ class _HomePageState extends State<HomePage> {
     try {
       scannedId = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Abbrechen", true, ScanMode.QR);
 
-      RegExpMatch regexQR = RegExpressions.scannedQRegex.firstMatch(scannedId);
-      String userId = regexQR.group(1);
-      int points = int.parse(regexQR.group(2));
+      RegExpMatch regexQR = RegExpressions.scannedQRegex.firstMatch(scannedId)!;
+      String? userId = regexQR.group(1);
+      int points = int.parse(regexQR.group(2)!);
       int totalPoints = await database.getUserDoc(userId).then((value) => value['totalPoints']);
       try {
         totalPoints = totalPoints - points;
@@ -115,7 +115,7 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
   }
 
-  Future<void> _redeemPoints(BuildContext context, String scannedId, int points) async {
+  Future<void> _redeemPoints(BuildContext context, String? scannedId, int points) async {
     final auth = Provider.of<AuthBase>(context, listen: false);
     final database = Provider.of<Database>(context, listen: false);
     String timestamp = DateTime.now().toIso8601String();
@@ -127,7 +127,7 @@ class _HomePageState extends State<HomePage> {
             userId: scannedId,
           ),
           scannedId,
-          auth.currentUser.displayName,
+          auth.currentUser!.displayName,
           timestamp);
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
@@ -264,13 +264,13 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 StreamBuilder<DocumentSnapshot>(
-                    stream: provideDocumentFieldStream(auth.currentUser.uid),
+                    stream: provideDocumentFieldStream(auth.currentUser!.uid),
                     builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
                       if (snapshot.hasData) {
                         //snapshot -> AsyncSnapshot of DocumentSnapshot
                         //snapshot.data -> DocumentSnapshot
                         //snapshot.data.data -> Map of fields that you need :)
-                        Map<String, dynamic> documentFields = snapshot.data.data();
+                        Map<String, dynamic> documentFields = snapshot.data!.data() as Map<String, dynamic>;
                         return Column(
                           children: [
                             Row(
@@ -323,7 +323,7 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 QrImage(
-                  data: auth.currentUser.uid,
+                  data: auth.currentUser!.uid,
                   version: QrVersions.auto,
                   size: 200,
                   foregroundColor: Colors.white,
@@ -378,8 +378,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  _displayQRCard(BuildContext context, int points, String subtitle) async {
+  _displayQRCard(BuildContext context, int? points, String? subtitle) async {
     final auth = Provider.of<AuthBase>(context, listen: false);
-    await showQRDialog(context, points: points, uid: auth.currentUser.uid, subtitle: subtitle);
+    await showQRDialog(context, points: points, uid: auth.currentUser!.uid, subtitle: subtitle);
   }
 }

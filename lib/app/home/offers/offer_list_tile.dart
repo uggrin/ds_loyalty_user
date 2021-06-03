@@ -2,15 +2,15 @@ import 'package:ds_loyalty_user/app/home/models/offer.dart';
 import 'package:flutter/material.dart';
 
 class OfferListTile extends StatelessWidget {
-  const OfferListTile({Key key, @required this.offer, this.onTap}) : super(key: key);
+  const OfferListTile({Key? key, required this.offer, this.onTap}) : super(key: key);
   final Offer offer;
 
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(
-        offer.name,
+        offer.name!,
         style: TextStyle(color: Colors.white, fontSize: 16),
       ),
       onTap: onTap,

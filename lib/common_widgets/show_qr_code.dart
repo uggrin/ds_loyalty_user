@@ -5,11 +5,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-Future<bool> showQRDialog(
+Future<bool?> showQRDialog(
   BuildContext context, {
-  @required int points,
-  @required String subtitle,
-  @required String uid,
+  required int? points,
+  required String? subtitle,
+  required String uid,
 }) {
   if (!Platform.isIOS) {
     return showDialog(
