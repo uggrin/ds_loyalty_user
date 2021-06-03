@@ -2,7 +2,7 @@ name: ds_loyalty_user
 description: DS Loyalty member application.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.3+3
+version: 1.0.4+4
 
 environment:
   sdk: ">=2.10.0 <3.0.0"

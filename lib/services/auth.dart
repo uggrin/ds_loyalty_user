@@ -173,12 +173,6 @@ class Auth implements AuthBase {
   Future<User> signInFacebook() async {
     final LoginResult result = await FacebookAuth.instance.login();
 
-    // loginBehavior is only supported for Android devices, for ios it will be ignored
-    */ /*final result = await FacebookAuth.instance.login(
-      permissions: ['email', 'public_profile'],
-      loginBehavior: LoginBehavior.DIALOG_ONLY, // (only android) show an authentication dialog instead of redirecting to facebook app
-    );*/ /*
-
     if (result.status == LoginStatus.success) {
       _accessToken = result.accessToken;
       // get the user data
@@ -212,14 +206,10 @@ class Auth implements AuthBase {
     }
   }*/
 
-  Future<void> _logOut() async {
-    await FacebookAuth.instance.logOut();
-    _accessToken = null;
-  }
-
-  Future<User> signInFacebook() async {
+  // Working version with flutter_facebook_auth: ^1.0.0
+  /*Future<User> signInFacebook() async {
     // Trigger the sign-in flow
-    final AccessToken result = await FacebookAuth.instance.login();
+    final AccessToken result = await FacebookAuth.instance.expressLogin();
 
     // Create a credential from the access token
     final facebookAuthCredential = FacebookAuthProvider.credential(result.token);
@@ -245,6 +235,24 @@ class Auth implements AuthBase {
     print(_userCredential);
 
     return _userCredential.user;
+  }
+*/
+
+  Future<User> signInFacebook() async {
+    /*final LoginResult result = await FacebookAuth.instance.login();
+    if (result.status == LoginStatus.success) {
+      // Create a credential from the access token
+      final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken.token);
+      // Once signed in, return the UserCredential
+      final _userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      return _userCredential.user;
+    }
+    return null;*/
+  }
+
+  Future<void> _logOut() async {
+    await FacebookAuth.instance.logOut();
+    _accessToken = null;
   }
 
   @override
