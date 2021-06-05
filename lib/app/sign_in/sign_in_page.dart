@@ -135,8 +135,6 @@ class _SignInPageState extends State<SignInPage> {
               color: Colors.white,
               height: 35,
               width: MediaQuery.of(context).size.width - 180,
-              /*
-              onPressed: widget.isLoading || !isChecked ? null : () => _signInGoogle(context),*/
               onPressed: () => checkPrivacyAccept(1),
             ),
             SizedBox(height: 12),

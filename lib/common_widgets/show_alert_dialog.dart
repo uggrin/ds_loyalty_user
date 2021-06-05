@@ -21,12 +21,12 @@ Future<bool?> showAlertDialog(
                   FlatButton(
                     child: Text(cancelActionText),
                     onPressed: () => Navigator.of(context).pop(false),
-                    color: Colors.grey[800],
+                    color: Colors.grey[400],
                   ),
                 FlatButton(
                   child: Text(defaultActionText),
                   onPressed: () => Navigator.of(context).pop(true),
-                  color: Colors.grey[800],
+                  color: Colors.grey[400],
                 ),
               ],
             ));

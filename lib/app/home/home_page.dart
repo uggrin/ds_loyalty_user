@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ds_loyalty_user/app/helpers/reg_expressions.dart';
 import 'package:ds_loyalty_user/app/home/add_points/edit_points.dart';
@@ -14,6 +16,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -36,6 +39,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     checkUserRole();
+    _checkIfIsLogged();
   }
 
   Future<void> _signOut(BuildContext context) async {
@@ -140,72 +144,74 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Stream<DocumentSnapshot> provideDocumentFieldStream(currentUserId) {
-    return FirebaseFirestore.instance.collection('users').doc('$currentUserId').snapshots();
-  }
-
-  /*String fullName;
-  Function getName() {
-    final auth = Provider.of<AuthBase>(context, listen: false);
-    DocumentReference docRef = FirebaseFirestore.instance.collection("users").doc(auth.currentUser.uid);
-    docRef.get().then((value) => fullName = value['fullName']);
-    print(fullName);
-  }*/
-
   @override
   Widget build(BuildContext context) {
     final database = Provider.of<Database>(context, listen: false);
-    final auth = Provider.of<AuthBase>(context, listen: false);
     database.offersStream();
 
-    if (isAdmin) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Heim'),
-          actions: [
-            TextButton(
-              onPressed: () => _confirmSignOut(context),
-              child: Icon(
-                Icons.logout,
-                color: Colors.black,
+    if (!isAdmin) {
+      try {
+        return _buildUserPage();
+      } on Exception catch (e) {
+        throw (e);
+      }
+    } else {
+      try {
+        return _buildAdminPage();
+      } on Exception catch (e) {
+        throw (e);
+      }
+    }
+  }
+
+  Widget _buildAdminPage() {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Heim'),
+        actions: [
+          TextButton(
+            onPressed: () => _confirmSignOut(context),
+            child: Icon(
+              Icons.logout,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: _buildOffers(context),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              CustomButton(
+                onPressed: () => EditOffer.show(context),
+                child: Row(
+                  children: [
+                    Text('Angebote'),
+                    Icon(
+                      Icons.add,
+                      size: 22,
+                      color: Colors.black,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: _buildOffers(context),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                CustomButton(
-                  onPressed: () => EditOffer.show(context),
-                  child: Row(
-                    children: [
-                      Text('Angebote'),
-                      Icon(
-                        Icons.add,
-                        size: 22,
-                        color: Colors.black,
-                      ),
-                    ],
-                  ),
-                ),
-                CustomButton(
-                  child: Text('Einlösen'),
-                  borderRadius: 0,
-                  onPressed: _scanToRedeemPoints,
-                ),
-                CustomButton(
-                  child: Text('Hinzufügen'),
-                  borderRadius: 0,
-                  onPressed: () => EditPoints.show(context),
-                ),
-              ],
-            ),
-            /*Padding(
+              CustomButton(
+                child: Text('Einlösen'),
+                borderRadius: 0,
+                onPressed: _scanToRedeemPoints,
+              ),
+              CustomButton(
+                child: Text('Hinzufügen'),
+                borderRadius: 0,
+                onPressed: () => EditPoints.show(context),
+              ),
+            ],
+          ),
+          /*Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -240,103 +246,109 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),*/
-          ],
-        ),
-      );
-    } else {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Heim'),
-          actions: [
-            TextButton(
-              onPressed: () => _confirmSignOut(context),
-              child: Icon(
-                Icons.logout,
-                color: Colors.black,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserPage() {
+    final auth = Provider.of<AuthBase>(context, listen: false);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Heim'),
+        actions: [
+          TextButton(
+            onPressed: () => _confirmSignOut(context),
+            child: Icon(
+              Icons.logout,
+              color: Colors.black,
+            ),
+          )
+        ],
+      ),
+      body: Column(
+        children: [
+          SizedBox(height: 16.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildProfile(),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              QrImage(
+                data: auth.currentUser!.uid,
+                version: QrVersions.auto,
+                size: 200,
+                foregroundColor: Colors.white,
               ),
-            )
-          ],
-        ),
-        body: Column(
-          children: [
-            SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            ],
+          ),
+          Expanded(
+            child: _buildOffers(context),
+          )
+        ],
+      ),
+    );
+  }
+
+  //TODO: Revert strings.xml to live facebook app
+
+  Widget _buildProfile() {
+    final auth = Provider.of<AuthBase>(context, listen: false);
+    final Stream<DocumentSnapshot> _usersStream = FirebaseFirestore.instance.collection('users').doc(auth.currentUser!.uid).snapshots();
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _usersStream,
+      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return Text('Etwas ist schief gelaufen');
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Text("Warten...");
+        }
+
+        try {
+          if (snapshot.hasData) {
+            Map<String, dynamic> documentFields = snapshot.data!.data() as Map<String, dynamic>;
+            return Column(
               children: [
-                StreamBuilder<DocumentSnapshot>(
-                    stream: provideDocumentFieldStream(auth.currentUser!.uid),
-                    builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-                      if (snapshot.hasData) {
-                        //snapshot -> AsyncSnapshot of DocumentSnapshot
-                        //snapshot.data -> DocumentSnapshot
-                        //snapshot.data.data -> Map of fields that you need :)
-                        Map<String, dynamic> documentFields = snapshot.data!.data() as Map<String, dynamic>;
-                        return Column(
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  documentFields['fullName'].toString(),
-                                  style: Theme.of(context).textTheme.overline,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  "Meine Punkte: ",
-                                  style: Theme.of(context).textTheme.subtitle1,
-                                ),
-                                Text(
-                                  documentFields['totalPoints'].toString(),
-                                  style: Theme.of(context).textTheme.subtitle1,
-                                ),
-                              ],
-                            )
-                          ],
-                        );
-                      } else {
-                        return Text('Fehler...');
-                      }
-                    }),
-                /*StreamBuilder<DocumentSnapshot>(
-                    stream: provideDocumentFieldStream(auth.currentUser.uid),
-                    builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-                      if (snapshot.hasData) {
-                        //snapshot -> AsyncSnapshot of DocumentSnapshot
-                        //snapshot.data -> DocumentSnapshot
-                        //snapshot.data.data -> Map of fields that you need :)
-                        Map<String, dynamic> documentFields = snapshot.data.data();
-                        return Text(
-                          documentFields['totalPoints'].toString(),
-                          style: Theme.of(context).textTheme.subtitle2,
-                        );
-                      } else {
-                        return Text('Error...');
-                      }
-                    }),*/
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                QrImage(
-                  data: auth.currentUser!.uid,
-                  version: QrVersions.auto,
-                  size: 200,
-                  foregroundColor: Colors.white,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      documentFields['fullName'],
+                      style: Theme.of(context).textTheme.overline,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
+                Row(
+                  children: [
+                    Text(
+                      "Meine Punkte: ",
+                      style: Theme.of(context).textTheme.caption,
+                    ),
+                    Text(
+                      documentFields['totalPoints'].toString(),
+                      style: Theme.of(context).textTheme.caption,
+                    ),
+                  ],
+                )
               ],
-            ),
-            Expanded(
-              child: _buildOffers(context),
-            )
-          ],
-        ),
-      );
-    }
+            );
+          }
+        } on PlatformException catch (e) {
+          print(e.message);
+          return CircularProgressIndicator();
+        }
+        return Text('Fehler beim Lesen der Benutzerdaten, bitte versuchen Sie es später erneut.');
+      },
+    );
   }
 
   Widget _buildOffers(BuildContext context) {
@@ -375,6 +387,35 @@ class _HomePageState extends State<HomePage> {
       await database.deleteOffer(job);
     } on FirebaseException catch (e) {
       showExceptionAlert(context, title: 'Operation failed', exception: e);
+    }
+  }
+
+  String prettyPrint(Map json) {
+    JsonEncoder encoder = new JsonEncoder.withIndent('  ');
+    String pretty = encoder.convert(json);
+    return pretty;
+  }
+
+  Map<String, dynamic>? _userData;
+  AccessToken? _accessToken;
+  bool _checking = true;
+
+  Future<void> _checkIfIsLogged() async {
+    final accessToken = await FacebookAuth.instance.accessToken;
+    setState(() {
+      _checking = false;
+    });
+    if (accessToken != null) {
+      try {
+        final userData = await FacebookAuth.instance.getUserData(fields: 'name,email,birthday,gender,location');
+        setState(() {
+          _userData = userData;
+        });
+      } on PlatformException catch (e) {
+        print(e.message);
+      }
+      // final userData = await FacebookAuth.instance.getUserData(fields: "email,birthday,friends,gender,link");
+      _accessToken = accessToken;
     }
   }
 

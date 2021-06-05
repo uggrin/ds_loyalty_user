@@ -1,12 +1,8 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ds_loyalty_user/app/home/models/offer.dart';
 import 'package:ds_loyalty_user/app/home/models/point.dart';
 import 'package:ds_loyalty_user/services/api_paths.dart';
 import 'package:ds_loyalty_user/services/firestore_service.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 
 abstract class Database {
   Future<void> setOffer(Offer job);
@@ -15,6 +11,7 @@ abstract class Database {
   Stream<List<Offer>> offersStream();
   Future<void> deleteOffer(Offer job);
   Future<DocumentSnapshot> getUserDoc(String? scannedId);
+  Stream<DocumentSnapshot> provideDocFieldStream(currentUserId);
   //Future<bool> checkUserRole(String userId, BuildContext context);
 }
 
@@ -58,5 +55,10 @@ class FirestoreDatabase implements Database {
 
   Future<DocumentSnapshot> getUserDoc(String? scannedId) async {
     return await FirebaseFirestore.instance.doc(APIPath.user(scannedId)).get().then((value) => value);
+  }
+
+  @override
+  Stream<DocumentSnapshot> provideDocFieldStream(currentUserId) {
+    return FirebaseFirestore.instance.doc(APIPath.user('$currentUserId')).snapshots();
   }
 }

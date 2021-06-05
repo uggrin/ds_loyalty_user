@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
 class FirestoreService {
   FirestoreService._();
@@ -37,7 +35,6 @@ class FirestoreService {
         .toList());
   }
 
-  // TODO: Get user document
   Stream<Iterable<T>> collectionSnapshots<T>({
     required String path,
     required T Function(Map<String, dynamic> data, String documentId) builder,

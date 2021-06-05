@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DS Loyalty</string>
-    <string name="facebook_app_id">580943942896530</string>
-    <string name="fb_login_protocol_scheme">fb580943942896530</string>
+    <string name="facebook_app_id">525470815290974</string>
+    <string name="fb_login_protocol_scheme">fb525470815290974</string>
 </resources>

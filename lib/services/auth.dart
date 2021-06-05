@@ -98,7 +98,7 @@ class Auth implements AuthBase {
 
   @override
   Future<User?> signInGoogle() async {
-    final googleSignIn = GoogleSignIn();
+    final googleSignIn = GoogleSignIn(scopes: ['email', "https://www.googleapis.com/auth/userinfo.profile"]);
     final googleUser = await googleSignIn.signIn();
 
     if (googleUser != null) {
@@ -108,13 +108,14 @@ class Auth implements AuthBase {
           idToken: googleAuth.idToken,
           accessToken: googleAuth.accessToken,
         ));
+
         DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(userCredential.user!.uid).get();
         if (!snapshot.exists) {
           await _firestore.collection(APIPath.users()).doc(userCredential.user!.uid).set({
             'id': userCredential.user!.uid,
             'email': userCredential.user!.email,
             'fullName': userCredential.user!.displayName,
-            'phoneNumber': userCredential.user!.phoneNumber,
+            'photoUrl': googleSignIn.currentUser!.photoUrl ?? 0,
             'totalPoints': 0,
             'accepted_policy': true,
             //'photoUrl': userCredential.user.photoURL,
@@ -127,6 +128,42 @@ class Auth implements AuthBase {
       }
     } else {
       throw FirebaseAuthException(code: 'ERROR_ABORTED_BY_USER', message: 'Sign in aborted by user.');
+    }
+  }
+
+  Future<User> signInFacebook() async {
+    final result = await FacebookAuth.i.login(
+      permissions: ['email', 'public_profile', 'user_birthday', 'user_age_range', 'user_gender', 'user_location'],
+      loginBehavior: LoginBehavior.webOnly,
+    );
+
+    if (result.status == LoginStatus.success) {
+      // Create a credential from the access token
+      final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.token);
+
+      // Once signed in, return the UserCredentials
+      final _userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+
+      DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(_userCredential.user!.uid).get();
+
+      final userData = await FacebookAuth.instance.getUserData(fields: 'name,email,birthday,gender,location');
+      if (!snapshot.exists) {
+        await _firestore.collection(APIPath.users()).doc(_userCredential.user!.uid).set({
+          'id': _userCredential.user!.uid,
+          'email': _userCredential.user!.email,
+          'fullName': _userCredential.user!.displayName,
+          'birthday': userData['birthday'] ?? '01.01.2001',
+          'gender': userData['gender'] ?? 'X',
+          'location': userData['location'] ?? 'Österreich',
+          'totalPoints': 0,
+          'accepted_policy': true,
+          //'photoUrl': userCredential.user.photoURL,
+          //'providerData': userCredential.user.providerData,
+        });
+      }
+      return _userCredential.user!;
+    } else {
+      throw ('Error signing in with Facebook!');
     }
   }
 
@@ -236,20 +273,6 @@ class Auth implements AuthBase {
     return _userCredential.user;
   }
 */
-
-  Future<User> signInFacebook() async {
-    final LoginResult result = await FacebookAuth.instance.login();
-    if (result.status == LoginStatus.success) {
-      // Create a credential from the access token
-      final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.token);
-      // Once signed in, return the UserCredential
-      final _userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-
-      return _userCredential.user!;
-    } else {
-      throw ('Error signing in with Facebook!');
-    }
-  }
 
   Future<void> _logOut() async {
     await FacebookAuth.instance.logOut();

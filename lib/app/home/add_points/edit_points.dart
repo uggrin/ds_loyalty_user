@@ -44,7 +44,7 @@ class _EditPointsState extends State<EditPoints> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Points'),
+        title: Text('Punkte hinzufügen'),
         actions: [
           TextButton(
             onPressed: () => _confirmSignOut(context),
@@ -59,7 +59,7 @@ class _EditPointsState extends State<EditPoints> {
           children: [
             SizedBox(height: 8),
             Text(
-              "Select amount and tap button to scan",
+              "Zu addierende Menge:",
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),
             Row(
@@ -79,7 +79,7 @@ class _EditPointsState extends State<EditPoints> {
             ),
             CustomButton(
               color: Colors.white,
-              child: Text("Scan to add"),
+              child: Text("Scannen zum Hinzufügen"),
               width: 200,
               onPressed: () => scanToAdd(_currentValue),
             ),
@@ -138,7 +138,7 @@ class _EditPointsState extends State<EditPoints> {
     String barcodeScanRes;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      barcodeScanRes = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.QR);
+      barcodeScanRes = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Abbrechen", true, ScanMode.QR);
 
       _addPoints(context, barcodeScanRes, points);
     } on PlatformException {
@@ -164,21 +164,21 @@ class _EditPointsState extends State<EditPoints> {
       showAlertDialog(
         context,
         title: 'Success!',
-        content: 'You have successfully added $scannedPoints points',
+        content: 'Erfolgreich $scannedPoints Punkte hinzügefugt',
         defaultActionText: 'Ok',
       );
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         showExceptionAlert(
           context,
-          title: 'You don\'t have permissions for this action',
+          title: 'Sie haben keinen Zugriff für diese Aktion',
           exception: e,
         );
       } else {
         showAlertDialog(
           context,
-          title: 'Error',
-          content: 'There was an error adding points, please try again later',
+          title: 'Fehler',
+          content: 'Es ist ein Fehler beim Hinzufügen von Punkten aufgetreten, bitte versuchen Sie es später noch einmal',
           defaultActionText: 'Ok',
         );
       }
@@ -197,10 +197,10 @@ class _EditPointsState extends State<EditPoints> {
   Future<void> _confirmSignOut(BuildContext context) async {
     final didRequestSignout = await showAlertDialog(
       context,
-      title: 'Logout',
-      content: 'Are you sure?',
-      cancelActionText: 'Cancel',
-      defaultActionText: 'Logout',
+      title: 'Abmelden',
+      content: 'Sind Sie sicher?',
+      cancelActionText: 'Abbrechen',
+      defaultActionText: 'Abmelden',
     );
     if (didRequestSignout == true) {
       _signOut(context);

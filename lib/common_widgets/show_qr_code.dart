@@ -35,7 +35,7 @@ Future<bool?> showQRDialog(
                 FlatButton(
                   child: Text('Close'),
                   onPressed: () => Navigator.of(context).pop(true),
-                  color: Colors.grey[800],
+                  color: Colors.grey[400],
                 ),
               ],
             ));

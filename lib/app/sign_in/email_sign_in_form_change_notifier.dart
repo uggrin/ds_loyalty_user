@@ -230,7 +230,6 @@ class _EmailSignInFormChangeNotifierState extends State<EmailSignInFormChangeNot
     );
   }
 
-  // TODO: Implement birthday int field
   TextField _buildBirthdayField() {
     return TextField(
       focusNode: _birthdayFocusNode,
@@ -291,7 +290,6 @@ class _EmailSignInFormChangeNotifierState extends State<EmailSignInFormChangeNot
     );
   }
 
-  // TODO: Implement int phone field
   TextField _buildPhoneField() {
     return TextField(
       focusNode: _phoneFocusNode,
