@@ -133,7 +133,7 @@ class Auth implements AuthBase {
 
   Future<User> signInFacebook() async {
     final result = await FacebookAuth.i.login(
-      permissions: ['email', 'public_profile', 'user_birthday', 'user_age_range', 'user_gender', 'user_location'],
+      permissions: ['public_profile', 'email', 'user_birthday', 'user_gender', 'user_location'],
       loginBehavior: LoginBehavior.webOnly,
     );
 
@@ -146,25 +146,31 @@ class Auth implements AuthBase {
 
       DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(_userCredential.user!.uid).get();
 
-      final userData = await FacebookAuth.instance.getUserData(fields: 'name,email,birthday,gender,location');
-      if (!snapshot.exists) {
-        await _firestore.collection(APIPath.users()).doc(_userCredential.user!.uid).set({
-          'id': _userCredential.user!.uid,
-          'email': _userCredential.user!.email,
-          'fullName': _userCredential.user!.displayName,
-          'birthday': userData['birthday'] ?? '01.01.2001',
-          'gender': userData['gender'] ?? 'X',
-          'location': userData['location'] ?? 'Österreich',
-          'totalPoints': 0,
-          'accepted_policy': true,
-          //'photoUrl': userCredential.user.photoURL,
-          //'providerData': userCredential.user.providerData,
-        });
+      try {
+        final userData = await FacebookAuth.instance.getUserData(fields: 'name,email,birthday,gender,location');
+
+        if (!snapshot.exists) {
+          await _firestore.collection(APIPath.users()).doc(_userCredential.user!.uid).set({
+            'id': _userCredential.user!.uid,
+            'email': userData['email'] ?? '',
+            'fullName': _userCredential.user!.displayName,
+            'birthday': userData['birthday'] ?? '',
+            'gender': userData['gender'] ?? '',
+            'location': userData['location'] ?? '',
+            'totalPoints': 0,
+            'accepted_policy': true,
+            //'photoUrl': userCredential.user.photoURL,
+            //'providerData': userCredential.user.providerData,
+          });
+          return _userCredential.user!;
+        }
+        return _userCredential.user!;
+      } on Exception catch (e) {
+        print('fuck $e');
+        throw (e);
       }
-      return _userCredential.user!;
-    } else {
-      throw ('Error signing in with Facebook!');
     }
+    throw ('There was an error signing in with Facebook...');
   }
 
   /*final fbLogin = FacebookLogin();

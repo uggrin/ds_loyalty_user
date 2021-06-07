@@ -39,7 +39,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     checkUserRole();
-    _checkIfIsLogged();
+    checkUserVip();
+    //_checkIfIsLogged();
   }
 
   Future<void> _signOut(BuildContext context) async {
@@ -252,7 +253,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildUserPage() {
-    final auth = Provider.of<AuthBase>(context, listen: false);
+    //final auth = Provider.of<AuthBase>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
@@ -270,38 +271,101 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           SizedBox(height: 16.0),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildProfile(),
-            ],
+          SizedBox(
+            height: 50,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildProfile(),
+              ],
+            ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              QrImage(
-                data: auth.currentUser!.uid,
-                version: QrVersions.auto,
-                size: 200,
-                foregroundColor: Colors.white,
-              ),
-            ],
+          SizedBox(
+            height: 200,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: _isVIP
+                      ? GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _toggle = !_toggle;
+                            });
+                          },
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 500),
+                            transitionBuilder: (Widget child, Animation<double> animation) {
+                              return ScaleTransition(child: child, scale: animation);
+                            },
+                            child: _toggle ? _buildVIP() : _buildQr(),
+                          ),
+                        )
+                      : _buildQr(),
+                ),
+              ],
+            ),
           ),
-          Expanded(
-            child: _buildOffers(context),
-          )
+          Expanded(child: _buildOffers(context)),
         ],
       ),
     );
+  }
+
+  Widget _buildQr() {
+    final auth = Provider.of<AuthBase>(context, listen: false);
+    return QrImage(
+      data: auth.currentUser!.uid,
+      version: QrVersions.auto,
+      size: 200,
+      foregroundColor: Colors.white,
+    );
+  }
+
+  Future checkUserVip() async {
+    final auth = Provider.of<AuthBase>(context, listen: false);
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection(APIPath.vip()).doc(auth.currentUser!.uid).get();
+      this.setState(() {
+        _isVIP = snapshot.exists;
+      });
+    } on FirebaseException catch (e) {
+      showExceptionAlert(
+        context,
+        title: 'Error checking status',
+        exception: e,
+      );
+    }
+  }
+
+  Widget _buildVIP() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Image.asset('assets/images/vip.png'),
+    );
+  }
+
+  bool _isVIP = false;
+  bool _toggle = false;
+  void _toggleQR() {
+    setState(() {
+      if (_toggle) {
+        _toggle = false;
+      } else {
+        _toggle = true;
+      }
+    });
   }
 
   //TODO: Revert strings.xml to live facebook app
 
   Widget _buildProfile() {
     final auth = Provider.of<AuthBase>(context, listen: false);
-    final Stream<DocumentSnapshot> _usersStream = FirebaseFirestore.instance.collection('users').doc(auth.currentUser!.uid).snapshots();
+    final Stream<DocumentSnapshot<Map<String, dynamic>>> _usersStream = FirebaseFirestore.instance.collection('users').doc(auth.currentUser!.uid).snapshots();
 
-    return StreamBuilder<DocumentSnapshot>(
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: _usersStream,
       builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.hasError) {
@@ -312,41 +376,48 @@ class _HomePageState extends State<HomePage> {
           return Text("Warten...");
         }
 
-        try {
-          if (snapshot.hasData) {
-            Map<String, dynamic> documentFields = snapshot.data!.data() as Map<String, dynamic>;
-            return Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      documentFields['fullName'],
-                      style: Theme.of(context).textTheme.overline,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text(
-                      "Meine Punkte: ",
-                      style: Theme.of(context).textTheme.caption,
-                    ),
-                    Text(
-                      documentFields['totalPoints'].toString(),
-                      style: Theme.of(context).textTheme.caption,
-                    ),
-                  ],
-                )
-              ],
-            );
-          }
-        } on PlatformException catch (e) {
-          print(e.message);
+        if (!snapshot.hasData) {
+          return Text("Loading");
+        }
+
+        if (snapshot.hasError) {
+          return Text('Error...');
+        }
+
+        if (snapshot.data!.exists) {
+          Map<String, dynamic> documentFields = snapshot.data!.data() as Map<String, dynamic>;
+
+          return Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    documentFields['fullName'],
+                    style: Theme.of(context).textTheme.overline,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text(
+                    "Meine Punkte: ",
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                  Text(
+                    documentFields['totalPoints'].toString(),
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                ],
+              )
+            ],
+          );
+        } else if (snapshot.hasError) {
+          return Text('There was an error...');
+        } else {
           return CircularProgressIndicator();
         }
-        return Text('Fehler beim Lesen der Benutzerdaten, bitte versuchen Sie es später erneut.');
       },
     );
   }
@@ -396,10 +467,7 @@ class _HomePageState extends State<HomePage> {
     return pretty;
   }
 
-  Map<String, dynamic>? _userData;
-  AccessToken? _accessToken;
   bool _checking = true;
-
   Future<void> _checkIfIsLogged() async {
     final accessToken = await FacebookAuth.instance.accessToken;
     setState(() {
@@ -407,15 +475,9 @@ class _HomePageState extends State<HomePage> {
     });
     if (accessToken != null) {
       try {
-        final userData = await FacebookAuth.instance.getUserData(fields: 'name,email,birthday,gender,location');
-        setState(() {
-          _userData = userData;
-        });
-      } on PlatformException catch (e) {
-        print(e.message);
-      }
-      // final userData = await FacebookAuth.instance.getUserData(fields: "email,birthday,friends,gender,link");
-      _accessToken = accessToken;
+        final userData = await FacebookAuth.instance.getUserData(fields: 'birthday,gender,location');
+        print(accessToken.declinedPermissions);
+      } on Exception catch (e) {}
     }
   }
 

@@ -5,4 +5,5 @@ class APIPath {
   static String users() => 'users';
   static String user(String? scannedId) => 'users/$scannedId';
   static String admin() => 'roles';
+  static String vip() => 'vip';
 }
