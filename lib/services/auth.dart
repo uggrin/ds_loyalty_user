@@ -147,19 +147,19 @@ class Auth implements AuthBase {
       DocumentSnapshot snapshot = await _firestore.collection(APIPath.users()).doc(_userCredential.user!.uid).get();
 
       try {
-        final userData = await FacebookAuth.instance.getUserData(fields: 'name,email,birthday,gender,location');
+        final userData = await FacebookAuth.instance.getUserData(fields: 'name,email,picture,birthday,gender,location');
 
         if (!snapshot.exists) {
           await _firestore.collection(APIPath.users()).doc(_userCredential.user!.uid).set({
             'id': _userCredential.user!.uid,
             'email': userData['email'] ?? '',
             'fullName': _userCredential.user!.displayName,
+            'photoUrl': _userCredential.user!.photoURL,
             'birthday': userData['birthday'] ?? '',
             'gender': userData['gender'] ?? '',
             'location': userData['location'] ?? '',
             'totalPoints': 0,
             'accepted_policy': true,
-            //'photoUrl': userCredential.user.photoURL,
             //'providerData': userCredential.user.providerData,
           });
           return _userCredential.user!;

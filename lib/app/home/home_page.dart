@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ds_loyalty_user/app/helpers/reg_expressions.dart';
 import 'package:ds_loyalty_user/app/home/add_points/edit_points.dart';
@@ -11,7 +12,9 @@ import 'package:ds_loyalty_user/common_widgets/show_qr_code.dart';
 import 'package:ds_loyalty_user/services/api_paths.dart';
 import 'package:ds_loyalty_user/services/auth.dart';
 import 'package:ds_loyalty_user/services/database.dart';
+import 'package:ds_loyalty_user/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,12 +37,16 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isAdmin = false;
+  bool _isVIP = false;
+  bool _toggle = false;
+  final _service = FirestoreService.instance;
 
   @override
   void initState() {
     super.initState();
     checkUserRole();
     checkUserVip();
+    //_getUserProfilePhoto();
     //_checkIfIsLogged();
   }
 
@@ -73,11 +80,12 @@ class _HomePageState extends State<HomePage> {
         isAdmin = snapshot.exists;
       });
     } on FirebaseException catch (e) {
-      showExceptionAlert(
+      throw (e);
+      /*showExceptionAlert(
         context,
         title: 'Error checking role',
         exception: e,
-      );
+      );*/
     }
   }
 
@@ -212,49 +220,12 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          /*Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        'Redeem points',
-                        style: Theme.of(context).textTheme.bodyText1,
-                      ),
-                      CustomButton(
-                        child: Icon(Icons.remove_circle),
-                        width: 120,
-                        onPressed: () => _scanToRedeemPoints(),
-                      ),
-                    ],
-                  ),
-                  SizedBox(width: 20),
-                  Column(
-                    children: [
-                      Text(
-                        'Add points',
-                        style: Theme.of(context).textTheme.bodyText1,
-                      ),
-                      CustomButton(
-                        child: Icon(Icons.add_circle),
-                        width: 120,
-                        onPressed: () => EditPoints.show(context),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),*/
         ],
       ),
     );
   }
 
   Widget _buildUserPage() {
-    //final auth = Provider.of<AuthBase>(context, listen: false);
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Heim'),
@@ -269,44 +240,18 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           SizedBox(height: 16.0),
-          SizedBox(
-            height: 50,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildProfile(),
-              ],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 70, child: _buildProfile()),
+            ],
           ),
           SizedBox(
             height: 200,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: _isVIP
-                      ? GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _toggle = !_toggle;
-                            });
-                          },
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 500),
-                            transitionBuilder: (Widget child, Animation<double> animation) {
-                              return ScaleTransition(child: child, scale: animation);
-                            },
-                            child: _toggle ? _buildVIP() : _buildQr(),
-                          ),
-                        )
-                      : _buildQr(),
-                ),
-              ],
-            ),
+            child: _buildCodeSwitcher(),
           ),
           Expanded(child: _buildOffers(context)),
         ],
@@ -314,7 +259,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildQr() {
+  Widget _generateQr() {
     final auth = Provider.of<AuthBase>(context, listen: false);
     return QrImage(
       data: auth.currentUser!.uid,
@@ -347,23 +292,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  bool _isVIP = false;
-  bool _toggle = false;
-  void _toggleQR() {
-    setState(() {
-      if (_toggle) {
-        _toggle = false;
-      } else {
-        _toggle = true;
-      }
-    });
-  }
-
   //TODO: Revert strings.xml to live facebook app
 
   Widget _buildProfile() {
     final auth = Provider.of<AuthBase>(context, listen: false);
-    final Stream<DocumentSnapshot<Map<String, dynamic>>> _usersStream = FirebaseFirestore.instance.collection('users').doc(auth.currentUser!.uid).snapshots();
+    final Stream<DocumentSnapshot<Map<String, dynamic>>> _usersStream =
+        FirebaseFirestore.instance.collection(APIPath.users()).doc(auth.currentUser!.uid).snapshots();
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: _usersStream,
@@ -390,27 +324,58 @@ class _HomePageState extends State<HomePage> {
           return Column(
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    documentFields['fullName'],
-                    style: Theme.of(context).textTheme.overline,
-                    overflow: TextOverflow.ellipsis,
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CachedNetworkImage(
+                        imageUrl: documentFields['photoUrl'],
+                        imageBuilder: (context, imageProvider) => Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(image: imageProvider, fit: BoxFit.fill),
+                          ),
+                        ),
+                        placeholder: (context, url) => CircularProgressIndicator(),
+                        errorWidget: (context, url, error) => Image.asset('assets/images/default_profile.png'),
+                      ),
+                      //child: _getProfilePhoto(documentFields['photoUrl']),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                documentFields['fullName'],
+                                style: Theme.of(context).textTheme.overline,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                "Meine Punkte: ",
+                                style: Theme.of(context).textTheme.caption,
+                              ),
+                              Text(
+                                documentFields['totalPoints'].toString(),
+                                style: Theme.of(context).textTheme.caption,
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
+                    ],
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  Text(
-                    "Meine Punkte: ",
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                  Text(
-                    documentFields['totalPoints'].toString(),
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                ],
-              )
             ],
           );
         } else if (snapshot.hasError) {
@@ -475,9 +440,11 @@ class _HomePageState extends State<HomePage> {
     });
     if (accessToken != null) {
       try {
-        final userData = await FacebookAuth.instance.getUserData(fields: 'birthday,gender,location');
+        //final userData = await FacebookAuth.instance.getUserData(fields: 'birthday,gender,location');
         print(accessToken.declinedPermissions);
-      } on Exception catch (e) {}
+      } on Exception catch (e) {
+        throw (e);
+      }
     }
   }
 
@@ -485,4 +452,60 @@ class _HomePageState extends State<HomePage> {
     final auth = Provider.of<AuthBase>(context, listen: false);
     await showQRDialog(context, points: points, uid: auth.currentUser!.uid, subtitle: subtitle);
   }
+
+  Widget _buildCodeSwitcher() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 200,
+          height: 200,
+          child: _isVIP
+              ? GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _toggle = !_toggle;
+                    });
+                  },
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    transitionBuilder: (Widget child, Animation<double> animation) {
+                      return ScaleTransition(child: child, scale: animation);
+                    },
+                    child: _toggle ? _buildVIP() : _generateQr(),
+                  ),
+                )
+              : _generateQr(),
+        ),
+      ],
+    );
+  }
+
+/*Widget _getProfilePhoto(String url) {
+    if (url != '') {
+      return CircleAvatar(
+        backgroundImage: NetworkImage(url),
+      );
+    } else {
+      return CircleAvatar(
+        backgroundImage: new AssetImage('assets/images/default_profile.png'),
+      );
+    }
+  }
+
+  String _photoUrl = '';
+  Future _getUserProfilePhoto() async {
+    final database = Provider.of<Database>(context, listen: false);
+    final auth = Provider.of<AuthBase>(context, listen: false);
+    try {
+      String profilePhotoUrl = await database.getUserDoc(auth.currentUser!.uid).then((value) => value['photoUrl']);
+      if (profilePhotoUrl != '') {
+        setState(() {
+          _photoUrl = profilePhotoUrl;
+        });
+      }
+    } on PlatformException catch (e) {
+      throw (e.details);
+    }
+  }*/
 }

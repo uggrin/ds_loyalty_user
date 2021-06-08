@@ -53,6 +53,7 @@ class FirestoreDatabase implements Database {
         builder: (data, documentId) => Offer.fromMap(data, documentId),
       );
 
+  @override
   Future<DocumentSnapshot> getUserDoc(String? scannedId) async {
     return await FirebaseFirestore.instance.doc(APIPath.user(scannedId)).get().then((value) => value);
   }

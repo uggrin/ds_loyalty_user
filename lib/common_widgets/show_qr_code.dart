@@ -16,7 +16,7 @@ Future<bool?> showQRDialog(
         context: context,
         builder: (context) => AlertDialog(
               title: Text(
-                '$subtitle - $points points',
+                '$subtitle - $points punkte',
                 style: Theme.of(context).textTheme.subtitle1,
               ),
               content: SizedBox(
@@ -33,7 +33,7 @@ Future<bool?> showQRDialog(
               ),
               actions: <Widget>[
                 FlatButton(
-                  child: Text('Close'),
+                  child: Text('Abschließen'),
                   onPressed: () => Navigator.of(context).pop(true),
                   color: Colors.grey[400],
                 ),
@@ -53,7 +53,7 @@ Future<bool?> showQRDialog(
             actions: <Widget>[
               CupertinoDialogAction(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: Text('Close'),
+                child: Text('Abschließen'),
               )
             ],
           ));
