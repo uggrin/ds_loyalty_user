@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ds_loyalty_user/app/helpers/reg_expressions.dart';
 import 'package:ds_loyalty_user/app/home/add_points/edit_points.dart';
 import 'package:ds_loyalty_user/app/home/models/point.dart';
+import 'package:ds_loyalty_user/app/home/widgets/offers_list_admin.dart';
+import 'package:ds_loyalty_user/app/home/widgets/offers_list_user.dart';
 import 'package:ds_loyalty_user/common_widgets/custom_button.dart';
 import 'package:ds_loyalty_user/common_widgets/show_alert_dialog.dart';
 import 'package:ds_loyalty_user/common_widgets/show_exception_alert.dart';
@@ -190,7 +192,8 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           Expanded(
-            child: _buildOffers(context),
+            child: AdminOffersList(),
+            //child: _buildOffers(context),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -253,7 +256,7 @@ class _HomePageState extends State<HomePage> {
             height: 200,
             child: _buildCodeSwitcher(),
           ),
-          Expanded(child: _buildOffers(context)),
+          Expanded(child: UserOffersList()),
         ],
       ),
     );
@@ -341,7 +344,6 @@ class _HomePageState extends State<HomePage> {
                         placeholder: (context, url) => CircularProgressIndicator(),
                         errorWidget: (context, url, error) => Image.asset('assets/images/default_profile.png'),
                       ),
-                      //child: _getProfilePhoto(documentFields['photoUrl']),
                     ),
                   ),
                   Row(
@@ -417,10 +419,10 @@ class _HomePageState extends State<HomePage> {
         });
   }
 
-  Future<void> _delete(BuildContext context, Offer job) async {
+  Future<void> _delete(BuildContext context, Offer offer) async {
     try {
       final database = Provider.of<Database>(context, listen: false);
-      await database.deleteOffer(job);
+      await database.deleteOffer(offer);
     } on FirebaseException catch (e) {
       showExceptionAlert(context, title: 'Operation failed', exception: e);
     }
