@@ -29,7 +29,7 @@ class ListItemsBuilder<T> extends StatelessWidget {
 
   Widget _buildList(List<T> items) {
     return ListView.separated(
-      separatorBuilder: (BuildContext context, int index) => Divider(height: 0.5, color: Colors.white38),
+      separatorBuilder: (BuildContext context, int index) => Divider(height: 0.5, color: Colors.grey[300]),
       itemCount: items.length + 2,
       itemBuilder: (context, index) {
         if (index == 0 || index == items.length + 1) {

@@ -68,4 +68,26 @@ class Boja {
     700: Color(0xFFFFFFFF),
   });
   static const int _textondarkAccentValue = 0xFFFFFFFF;
+
+  static const MaterialColor offerlist = MaterialColor(_offerlistPrimaryValue, <int, Color>{
+    50: Color(0xFFE7E6E2),
+    100: Color(0xFFC2C0B6),
+    200: Color(0xFF999685),
+    300: Color(0xFF706B54),
+    400: Color(0xFF524C2F),
+    500: Color(_offerlistPrimaryValue),
+    600: Color(0xFF2E2709),
+    700: Color(0xFF272107),
+    800: Color(0xFF201B05),
+    900: Color(0xFF141003),
+  });
+  static const int _offerlistPrimaryValue = 0xFF332C0A;
+
+  static const MaterialColor offerlistAccent = MaterialColor(_offerlistAccentValue, <int, Color>{
+    100: Color(0xFFFFCC55),
+    200: Color(_offerlistAccentValue),
+    400: Color(0xFFEEA700),
+    700: Color(0xFFD49500),
+  });
+  static const int _offerlistAccentValue = 0xFFFFBD22;
 }

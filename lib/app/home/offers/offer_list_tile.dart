@@ -11,7 +11,7 @@ class OfferListTile extends StatelessWidget {
     return ListTile(
       title: Text(
         offer.name!,
-        style: TextStyle(color: Colors.white, fontSize: 16),
+        style: TextStyle(color: Colors.grey[300], fontSize: 16),
       ),
       onTap: onTap,
       trailing: Row(
@@ -19,13 +19,13 @@ class OfferListTile extends StatelessWidget {
         children: [
           Icon(
             Icons.qr_code_scanner,
-            color: Colors.white,
+            color: Colors.grey[300],
             size: 16,
           ),
           SizedBox(width: 5),
           Text(
             offer.pointCost.toString(),
-            style: TextStyle(fontSize: 18, color: Colors.white),
+            style: TextStyle(fontSize: 18, color: Colors.grey[300]),
           ),
         ],
       ),

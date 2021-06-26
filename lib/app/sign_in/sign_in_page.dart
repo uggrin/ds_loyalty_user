@@ -12,7 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({Key? key, required this.manager, required this.isLoading}) : super(key: key);
+  const SignInPage({Key? key, required this.manager, required this.isLoading})
+      : super(key: key);
   final SignInManager manager;
   final bool isLoading;
 
@@ -40,7 +41,8 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   void _showSignInError(BuildContext context, Exception exception) {
-    if (exception is FirebaseException && exception.code == 'ERROR_ABORTED_BY_USER') {
+    if (exception is FirebaseException &&
+        exception.code == 'ERROR_ABORTED_BY_USER') {
       return;
     }
     showExceptionAlert(
@@ -252,7 +254,10 @@ class _SignInPageState extends State<SignInPage> {
       }
     } else {
       showAlertDialog(context,
-          title: "Error", content: "Um diese App nutzen zu können, müssen Sie unsere Datenschutzrichtlinie akzeptieren", defaultActionText: "Ok");
+          title: "Error",
+          content:
+              "Um diese App nutzen zu können, müssen Sie unsere Datenschutzrichtlinie akzeptieren",
+          defaultActionText: "Ok");
     }
   }
 

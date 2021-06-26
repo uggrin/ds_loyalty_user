@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ds_loyalty_user/app/helpers/boja.dart';
 import 'package:ds_loyalty_user/app/helpers/reg_expressions.dart';
 import 'package:ds_loyalty_user/app/home/add_points/edit_points.dart';
 import 'package:ds_loyalty_user/app/home/models/point.dart';
@@ -77,7 +78,10 @@ class _HomePageState extends State<HomePage> {
   Future checkUserRole() async {
     final auth = Provider.of<AuthBase>(context, listen: false);
     try {
-      final snapshot = await FirebaseFirestore.instance.collection(APIPath.admin()).doc(auth.currentUser!.uid).get();
+      final snapshot = await FirebaseFirestore.instance
+          .collection(APIPath.admin())
+          .doc(auth.currentUser!.uid)
+          .get();
       this.setState(() {
         isAdmin = snapshot.exists;
       });
@@ -97,23 +101,28 @@ class _HomePageState extends State<HomePage> {
     String timestamp = DateTime.now().toIso8601String();
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      scannedId = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Abbrechen", true, ScanMode.QR);
+      scannedId = await FlutterBarcodeScanner.scanBarcode(
+          "#ff6666", "Abbrechen", true, ScanMode.QR);
 
       RegExpMatch regexQR = RegExpressions.scannedQRegex.firstMatch(scannedId)!;
       String? userId = regexQR.group(1);
       int points = int.parse(regexQR.group(2)!);
-      int totalPoints = await database.getUserDoc(userId).then((value) => value['totalPoints']);
+      int totalPoints = await database
+          .getUserDoc(userId)
+          .then((value) => value['totalPoints']);
       try {
         totalPoints = totalPoints - points;
         if (totalPoints < 0) {
           showAlertDialog(
             context,
             title: 'Nicht genug Punkte!',
-            content: 'Der gescannte Benutzer hat nicht genug Punkte, um dieses Angebot zu nutzen.',
+            content:
+                'Der gescannte Benutzer hat nicht genug Punkte, um dieses Angebot zu nutzen.',
             defaultActionText: 'Ok',
           );
         } else {
-          final totalPointsToRedeem = Point(points: totalPoints, timestamp: timestamp, userId: userId);
+          final totalPointsToRedeem =
+              Point(points: totalPoints, timestamp: timestamp, userId: userId);
           await database.editTotalUserPoints(totalPointsToRedeem, userId);
           _redeemPoints(context, userId, points);
         }
@@ -130,7 +139,8 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
   }
 
-  Future<void> _redeemPoints(BuildContext context, String? scannedId, int points) async {
+  Future<void> _redeemPoints(
+      BuildContext context, String? scannedId, int points) async {
     final auth = Provider.of<AuthBase>(context, listen: false);
     final database = Provider.of<Database>(context, listen: false);
     String timestamp = DateTime.now().toIso8601String();
@@ -256,7 +266,12 @@ class _HomePageState extends State<HomePage> {
             height: 200,
             child: _buildCodeSwitcher(),
           ),
-          Expanded(child: UserOffersList()),
+          Expanded(
+            child: Container(
+              color: Boja.offerlist,
+              child: UserOffersList(),
+            ),
+          ),
         ],
       ),
     );
@@ -268,14 +283,17 @@ class _HomePageState extends State<HomePage> {
       data: auth.currentUser!.uid,
       version: QrVersions.auto,
       size: 200,
-      foregroundColor: Colors.white,
+      foregroundColor: Colors.grey[300],
     );
   }
 
   Future checkUserVip() async {
     final auth = Provider.of<AuthBase>(context, listen: false);
     try {
-      final snapshot = await FirebaseFirestore.instance.collection(APIPath.vip()).doc(auth.currentUser!.uid).get();
+      final snapshot = await FirebaseFirestore.instance
+          .collection(APIPath.vip())
+          .doc(auth.currentUser!.uid)
+          .get();
       this.setState(() {
         _isVIP = snapshot.exists;
       });
@@ -295,16 +313,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  //TODO: Revert strings.xml to live facebook app
-
   Widget _buildProfile() {
     final auth = Provider.of<AuthBase>(context, listen: false);
     final Stream<DocumentSnapshot<Map<String, dynamic>>> _usersStream =
-        FirebaseFirestore.instance.collection(APIPath.users()).doc(auth.currentUser!.uid).snapshots();
+        FirebaseFirestore.instance
+            .collection(APIPath.users())
+            .doc(auth.currentUser!.uid)
+            .snapshots();
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: _usersStream,
-      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Etwas ist schief gelaufen');
         }
@@ -314,7 +334,7 @@ class _HomePageState extends State<HomePage> {
         }
 
         if (!snapshot.hasData) {
-          return Text("Loading");
+          return Text("Warten...");
         }
 
         if (snapshot.hasError) {
@@ -322,7 +342,8 @@ class _HomePageState extends State<HomePage> {
         }
 
         if (snapshot.data!.exists) {
-          Map<String, dynamic> documentFields = snapshot.data!.data() as Map<String, dynamic>;
+          Map<String, dynamic> documentFields =
+              snapshot.data!.data() as Map<String, dynamic>;
 
           return Column(
             children: [
@@ -334,15 +355,18 @@ class _HomePageState extends State<HomePage> {
                       width: 50,
                       height: 50,
                       child: CachedNetworkImage(
-                        imageUrl: documentFields['photoUrl'],
+                        imageUrl: documentFields['photoUrl']['data']['url'],
                         imageBuilder: (context, imageProvider) => Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            image: DecorationImage(image: imageProvider, fit: BoxFit.fill),
+                            image: DecorationImage(
+                                image: imageProvider, fit: BoxFit.fill),
                           ),
                         ),
-                        placeholder: (context, url) => CircularProgressIndicator(),
-                        errorWidget: (context, url, error) => Image.asset('assets/images/default_profile.png'),
+                        placeholder: (context, url) =>
+                            CircularProgressIndicator(),
+                        errorWidget: (context, url, error) =>
+                            Image.asset('assets/images/default_profile.png'),
                       ),
                     ),
                   ),
@@ -413,7 +437,8 @@ class _HomePageState extends State<HomePage> {
                 snapshot: snapshot,
                 itemBuilder: (context, offer) => OfferListTile(
                       offer: offer,
-                      onTap: () => _displayQRCard(context, offer.pointCost, offer.name),
+                      onTap: () =>
+                          _displayQRCard(context, offer.pointCost, offer.name),
                     ));
           }
         });
@@ -452,7 +477,8 @@ class _HomePageState extends State<HomePage> {
 
   _displayQRCard(BuildContext context, int? points, String? subtitle) async {
     final auth = Provider.of<AuthBase>(context, listen: false);
-    await showQRDialog(context, points: points, uid: auth.currentUser!.uid, subtitle: subtitle);
+    await showQRDialog(context,
+        points: points, uid: auth.currentUser!.uid, subtitle: subtitle);
   }
 
   Widget _buildCodeSwitcher() {
@@ -471,7 +497,8 @@ class _HomePageState extends State<HomePage> {
                   },
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 500),
-                    transitionBuilder: (Widget child, Animation<double> animation) {
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
                       return ScaleTransition(child: child, scale: animation);
                     },
                     child: _toggle ? _buildVIP() : _generateQr(),

@@ -15,6 +15,7 @@ Future<bool?> showQRDialog(
     return showDialog(
         context: context,
         builder: (context) => AlertDialog(
+              backgroundColor: Colors.grey[300],
               title: Text(
                 '$subtitle - $points punkte',
                 style: Theme.of(context).textTheme.subtitle1,
