@@ -355,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                       width: 50,
                       height: 50,
                       child: CachedNetworkImage(
-                        imageUrl: documentFields['photoUrl']['data']['url'],
+                        imageUrl: documentFields['photoUrl'],
                         imageBuilder: (context, imageProvider) => Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,

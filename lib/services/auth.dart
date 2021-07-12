@@ -181,7 +181,8 @@ class Auth implements AuthBase {
             'id': _userCredential.user!.uid,
             'email': _userCredential.user!.email,
             'fullName': _userCredential.user!.displayName,
-            'photoUrl': userData['picture'] ?? _userCredential.user!.photoURL,
+            'photoUrl': userData['picture']['data']['url'] ??
+                _userCredential.user!.photoURL,
             'totalPoints': 0,
             'accepted_policy': true,
           });
